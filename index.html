@@ -2,42 +2,48 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Visual LIR - A330 Cargo Deck</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A330 Cargo Planner</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="app">
+<div class="app-container">
 
-  <header class="header">
-    <h1>Visual LIR - A330 Cargo Deck</h1>
-    <p class="subtitle">Dark mode · Real AKE/PAG widths · Real blocking zones</p>
-  </header>
+  <!-- ===================== -->
+  <!-- LEFT SIDEBAR PANEL   -->
+  <!-- ===================== -->
+  <aside class="sidebar">
+    <h2>Load Builder</h2>
 
-  <main>
+    <button id="addLoadBtn" class="add-load-btn">+ Add Load</button>
 
-    <!-- ========================== -->
-    <!--      FORWARD HOLD         -->
-    <!-- ========================== -->
+    <div id="loadList" class="load-list">
+      <!-- load rows injected here -->
+    </div>
+
+    <div class="sidebar-buttons">
+      <button id="exportBtn">Export Layout</button>
+      <button id="clearAllBtn" class="danger">Clear All</button>
+    </div>
+  </aside>
+
+  <!-- ===================== -->
+  <!-- RIGHT SIDE: CARGO UI -->
+  <!-- ===================== -->
+  <main class="cargo-area">
+
+    <div class="header">
+      <h1>A330 Cargo Hold Planner</h1>
+      <p class="subtitle">Dark Mode • Real Blocking Logic</p>
+    </div>
+
+    <!-- ======= FORWARD HOLD ======= -->
     <section class="hold-section">
-      <h2>FORWARD HOLD</h2>
-
-      <div class="legend">
-        <span class="legend-item">
-          <span class="legend-box container"></span> Containers (AKE)
-        </span>
-        <span class="legend-item">
-          <span class="legend-box pallet"></span> Pallets (PAG/PMC/PAJ)
-        </span>
-        <span class="legend-item">
-          <span class="legend-box disabled"></span> Blocked
-        </span>
-      </div>
+      <h2>Forward Hold</h2>
 
       <div class="deck-grid">
 
-        <!-- AKE Row L -->
+        <!-- AKE rows -->
         <div class="ake-row">
           <div class="slot ake" data-pos="26L"></div>
           <div class="slot ake" data-pos="25L"></div>
@@ -50,7 +56,6 @@
           <div class="slot ake" data-pos="11L"></div>
         </div>
 
-        <!-- AKE Row R -->
         <div class="ake-row">
           <div class="slot ake" data-pos="26R"></div>
           <div class="slot ake" data-pos="25R"></div>
@@ -63,7 +68,7 @@
           <div class="slot ake" data-pos="11R"></div>
         </div>
 
-        <!-- Forward Pallets -->
+        <!-- Pallets -->
         <div class="pallet-row">
           <div class="slot pallet" data-pos="24P"></div>
           <div class="slot pallet" data-pos="23P"></div>
@@ -73,19 +78,15 @@
           <div class="slot pallet" data-pos="11P"></div>
         </div>
 
-      </div><!-- /deck-grid -->
+      </div>
     </section>
 
-
-    <!-- ========================== -->
-    <!--         AFT HOLD          -->
-    <!-- ========================== -->
+    <!-- ======= AFT HOLD ======= -->
     <section class="hold-section">
-      <h2>AFT HOLD</h2>
+      <h2>Aft Hold</h2>
 
-      <div class="deck-grid">
+      <div class="deck-grid aft-grid">
 
-        <!-- AKE Row L -->
         <div class="ake-row">
           <div class="slot ake" data-pos="43L"></div>
           <div class="slot ake" data-pos="42L"></div>
@@ -96,7 +97,6 @@
           <div class="slot ake" data-pos="31L"></div>
         </div>
 
-        <!-- AKE Row R -->
         <div class="ake-row">
           <div class="slot ake" data-pos="43R"></div>
           <div class="slot ake" data-pos="42R"></div>
@@ -107,7 +107,6 @@
           <div class="slot ake" data-pos="31R"></div>
         </div>
 
-        <!-- Aft Pallets -->
         <div class="pallet-row">
           <div class="slot pallet" data-pos="42P"></div>
           <div class="slot pallet" data-pos="41P"></div>
@@ -116,25 +115,11 @@
           <div class="slot pallet" data-pos="31P"></div>
         </div>
 
-      </div><!-- /deck-grid -->
-    </section>
-
-
-    <!-- ========================== -->
-    <!--        CONTROLS           -->
-    <!-- ========================== -->
-    <section class="controls">
-      <button id="clear-btn">Clear All</button>
-      <button id="export-btn">Export Layout</button>
-    </section>
-
-    <section class="output-section">
-      <h2>Export Output</h2>
-      <textarea id="export-output" readonly></textarea>
+      </div>
     </section>
 
   </main>
-</div><!-- /.app -->
+</div>
 
 <script src="script.js"></script>
 </body>

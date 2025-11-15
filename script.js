@@ -1,153 +1,267 @@
-// State: each position -> { value, disabled }
-const state = {};
+/* =========================
+   GLOBAL LAYOUT
+========================= */
 
-// Pallet -> containers blocked (your rules)
-const palletBlocks = {
-  // Forward
-  "24P": ["26L","26R","25L","25R"],
-  "23P": ["25L","25R","24L","24R"],
-  "22P": ["22L","22R","23L","23R"],
-  "21P": ["21L","21R","22L","22R"],
-  "12P": ["13L","13R","12L","12R"],
-  "11P": ["12L","12R","11L","11R"],
-  // Aft
-  "42P": ["43L","43R","42L","42R"],
-  "41P": ["42L","42R","41L","41R"],
-  "33P": ["34L","34R","33L","33R"],
-  "32P": ["33L","33R","32L","32R"],
-  "31P": ["31L","31R"]
-};
-
-// Build inverse: container -> pallets blocked
-const containerBlocks = {};
-for (const [pallet, list] of Object.entries(palletBlocks)) {
-  list.forEach(c => {
-    if (!containerBlocks[c]) containerBlocks[c] = [];
-    containerBlocks[c].push(pallet);
-  });
+body {
+  margin: 0;
+  padding: 0;
+  background: #050509; /* dark background */
+  color: #ecf0f1;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  display: flex;
+  justify-content: center;
 }
 
-function allowedTypes(pos) {
-  // Containers: AKE only (for now)
-  // Pallets: PAG/PMC/PAJ
-  return pos.endsWith("P")
-    ? ["", "PAG", "PMC", "PAJ"]
-    : ["", "AKE"];
+.app-container {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  max-width: 1500px;
+  padding: 20px;
+  gap: 20px;
 }
 
-function initState() {
-  document.querySelectorAll(".slot").forEach(el => {
-    const pos = el.dataset.pos;
-    state[pos] = { value: "", disabled: false };
-  });
-  recomputeDisabled();
-  render();
+/* =========================
+   LEFT SIDEBAR (Load Builder)
+========================= */
+
+.sidebar {
+  width: 320px;
+  background: rgba(10, 18, 35, 0.82);
+  border-radius: 14px;
+  padding: 18px;
+  border: 1px solid rgba(80, 100, 130, 0.45);
+  box-shadow: 0 0 20px rgba(0,0,0,0.45) inset;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
-function recomputeDisabled() {
-  // reset
-  Object.keys(state).forEach(pos => { state[pos].disabled = false; });
-
-  // pallets block containers
-  for (const [p, list] of Object.entries(palletBlocks)) {
-    if (state[p].value) {
-      list.forEach(c => { state[c].disabled = true; });
-    }
-  }
-
-  // containers block pallets
-  for (const [c, list] of Object.entries(containerBlocks)) {
-    if (state[c].value) {
-      list.forEach(p => { state[p].disabled = true; });
-    }
-  }
+.sidebar h2 {
+  margin: 0 0 5px;
+  font-size: 18px;
+  color: #d1d5db;
 }
 
-function render() {
-  document.querySelectorAll(".slot").forEach(el => {
-    const pos = el.dataset.pos;
-    const st = state[pos];
-
-    el.classList.toggle("disabled", st.disabled);
-    el.classList.toggle("has-uld", !!st.value);
-    el.textContent = st.value || "";
-  });
+.add-load-btn {
+  width: 100%;
+  padding: 10px;
+  background: #0ea5e9;
+  color: #ffffff;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
 }
 
-function onSlotClick(e) {
-  const el = e.currentTarget;
-  const pos = el.dataset.pos;
-  const st = state[pos];
-
-  if (st.disabled) {
-    alert(`${pos} is blocked by another ULD.`);
-    return;
-  }
-
-  const allowed = allowedTypes(pos);
-  const input = prompt(
-    `Position ${pos}\nAllowed: ${allowed.filter(v => v).join(" / ")}\n\nLeave empty to clear.`,
-    st.value
-  );
-  if (input === null) return;
-
-  const value = input.trim().toUpperCase();
-
-  if (value && !allowed.includes(value)) {
-    alert("Invalid ULD type for this position.");
-    return;
-  }
-
-  // Check conflicts before committing
-  if (pos.endsWith("P")) {
-    const conts = palletBlocks[pos] || [];
-    const conflicts = conts.filter(c => state[c].value);
-    if (conflicts.length) {
-      alert(`Cannot place ${value} in ${pos}. Conflicts with containers: ${conflicts.join(", ")}`);
-      return;
-    }
-  } else {
-    const pallets = containerBlocks[pos] || [];
-    const conflicts = pallets.filter(p => state[p].value);
-    if (conflicts.length) {
-      alert(`Cannot place ${value} in ${pos}. Conflicts with pallets: ${conflicts.join(", ")}`);
-      return;
-    }
-  }
-
-  st.value = value;
-  recomputeDisabled();
-  render();
+.add-load-btn:hover {
+  background: #38bdf8;
 }
 
-function clearAll() {
-  if (!confirm("Clear all positions?")) return;
-  Object.keys(state).forEach(pos => {
-    state[pos].value = "";
-    state[pos].disabled = false;
-  });
-  render();
+.load-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-function exportLayout() {
-  let out = "LIR EXPORT\n===========\n\n";
-  Object.keys(state).forEach(pos => {
-    if (state[pos].value) {
-      out += `${pos}: ${state[pos].value}\n`;
-    }
-  });
-  document.getElementById("export-output").value = out;
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(out).catch(() => {});
-  }
-  alert("Layout exported and copied to clipboard.");
+.load-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: rgba(25, 35, 60, 0.8);
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(70, 90, 120, 0.45);
 }
 
-window.addEventListener("DOMContentLoaded", () => {
-  initState();
-  document.querySelectorAll(".slot").forEach(el => {
-    el.addEventListener("click", onSlotClick);
-  });
-  document.getElementById("clear-btn").addEventListener("click", clearAll);
-  document.getElementById("export-btn").addEventListener("click", exportLayout);
-});
+.load-row select,
+.load-row input {
+  background: #0f172a;
+  color: #e2e8f0;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  padding: 5px;
+  font-size: 13px;
+}
+
+.load-row input {
+  width: 90px;
+}
+
+.load-row select {
+  width: 75px;
+}
+
+.delete-load {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.sidebar-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sidebar-buttons button {
+  padding: 10px;
+  background: #111827;
+  border: 1px solid #475569;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #e5e7eb;
+  font-size: 14px;
+}
+
+.sidebar-buttons .danger {
+  border-color: #ef4444;
+}
+
+/* =========================
+   RIGHT SIDE – Cargo Area
+========================= */
+
+.cargo-area {
+  flex: 1;
+  background: radial-gradient(circle at top, #111827 0%, #020617 75%);
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: 0 0 30px rgba(0,0,0,0.55);
+}
+
+.cargo-area .header {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.cargo-area h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.subtitle {
+  color: #9ca3af;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+/* =========================
+   HOLD SECTIONS
+========================= */
+
+.hold-section {
+  margin-top: 28px;
+  padding: 16px;
+  background: rgba(10, 19, 38, 0.9);
+  border-radius: 14px;
+  border: 1px solid rgba(75, 85, 99, 0.6);
+}
+
+.hold-section h2 {
+  margin: 0 0 10px;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* =========================
+   GRID WIDTHS
+========================= */
+
+.deck-grid {
+  width: 750px;
+  margin: 0 auto;
+}
+
+.aft-grid {
+  width: 620px;
+}
+
+/* =========================
+   ROW LAYOUT
+========================= */
+
+.ake-row,
+.pallet-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+/* =========================
+   SLOT BASE STYLE
+========================= */
+
+.slot {
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #dbe2f0;
+  position: relative;
+  font-size: 13px;
+  cursor: default;
+  transition: 0.12s ease-out;
+}
+
+/* slot label above */
+.slot::before {
+  content: attr(data-pos);
+  position: absolute;
+  top: -14px;
+  font-size: 10px;
+  color: #8ea0c5;
+}
+
+/* =========================
+   AKE LOOK – Blue Glow
+========================= */
+
+.slot.ake {
+  width: 70px;
+  background: #112037;
+  border: 1px solid rgba(0, 180, 255, 0.45);
+  box-shadow:
+    inset 0 0 6px rgba(0, 200, 255, 0.12),
+    0 0 6px rgba(0, 200, 255, 0.22);
+}
+
+.slot.ake.has-uld {
+  background: rgba(0, 200, 255, 0.15);
+  border-color: #22c55e;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.45);
+}
+
+/* =========================
+   PALLET LOOK – Warm Grey/Brown
+========================= */
+
+.slot.pallet {
+  width: 110px;
+  background: #0f172a;
+  border: 1px solid rgba(180, 150, 120, 0.45);
+}
+
+.slot.pallet.has-uld {
+  background: rgba(200, 160, 120, 0.18);
+  border-color: #22c55e;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.45);
+}
+
+/* =========================
+   DISABLED SLOTS
+========================= */
+
+.slot.disabled {
+  opacity: 0.28;
+  pointer-events: none;
+  box-shadow: none !important;
+  border-color: #475569 !important;
+}

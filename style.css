@@ -1,21 +1,19 @@
-/* =========================
-   Global
-========================= */
+/* ========== Global ========== */
 body {
   margin: 0;
   padding: 0;
   background: #050509;
   color: #f5f5f5;
-  font-family: system-ui, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 .app {
   max-width: 1100px;
-  margin: auto;
+  margin: 20px auto;
   padding: 16px;
   background: radial-gradient(circle at top, #111827 0, #020617 70%);
   border-radius: 16px;
-  border: 1px solid rgba(148,163,184,0.3);
+  border: 1px solid rgba(148, 163, 184, 0.35);
 }
 
 .header {
@@ -23,31 +21,67 @@ body {
 }
 
 .subtitle {
+  margin-top: 4px;
+  font-size: 13px;
   color: #9ca3af;
 }
 
-/* =========================
-   Sections
-========================= */
+/* ========== Sections ========== */
 .hold-section {
   margin-top: 28px;
   padding: 16px;
-  border: 1px solid rgba(75,85,99,0.6);
   border-radius: 14px;
-  background: rgba(15,23,42,0.85);
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(75, 85, 99, 0.7);
 }
 
-/* =========================
-   FIXED DECK WIDTH
-========================= */
+.hold-section h2 {
+  margin: 0 0 6px;
+}
+
+/* ========== Legend ========== */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12px;
+  color: #9ca3af;
+  margin-bottom: 10px;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-box {
+  width: 18px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1px solid #6b7280;
+}
+
+.legend-box.container {
+  background: linear-gradient(135deg, #0ea5e9, #22c55e);
+}
+
+.legend-box.pallet {
+  background: linear-gradient(135deg, #eab308, #f97316);
+}
+
+.legend-box.disabled {
+  background: #020617;
+  border-color: #4b5563;
+}
+
+/* ========== Fixed deck width ========== */
 .deck-grid {
-  width: 820px;       /* EXACT pallet deck width calculated */
-  margin: auto;
+  width: 820px;          /* total deck width so rows align */
+  margin: 0 auto;
 }
 
-/* =========================
-   Rows
-========================= */
+/* ========== Rows ========== */
 .ake-row,
 .pallet-row {
   width: 100%;
@@ -58,9 +92,7 @@ body {
   margin-bottom: 8px;
 }
 
-/* =========================
-   Slot Base
-========================= */
+/* ========== Slot base ========== */
 .slot {
   height: 45px;
   background: #0f172a;
@@ -72,25 +104,24 @@ body {
   justify-content: center;
   position: relative;
   cursor: pointer;
+  font-size: 12px;
 }
 
 .slot::before {
   content: attr(data-pos);
-  font-size: 10px;
   position: absolute;
   top: 2px;
   left: 4px;
+  font-size: 10px;
   color: #9ca3af;
 }
 
-/* AKE WIDTH */
+/* AKE width (1 unit) */
 .slot.ake {
   width: 60px;
 }
 
-/* =========================
-   REAL PALLET WIDTHS
-========================= */
+/* ===== Real pallet widths (from LIR) ===== */
 
 /* Forward */
 .slot[data-pos="24P"] { width: 159px; }
@@ -107,12 +138,10 @@ body {
 .slot[data-pos="32P"] { width: 123px; }
 .slot[data-pos="31P"] { width:  60px; }
 
-/* =========================
-   States
-========================= */
+/* ========== States ========== */
 .slot.has-uld {
   border-color: #22c55e;
-  box-shadow: 0 0 8px rgba(34,197,94,0.4);
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.45);
 }
 
 .slot.disabled {
@@ -120,9 +149,7 @@ body {
   pointer-events: none;
 }
 
-/* =========================
-   Controls
-========================= */
+/* ========== Controls & Output ========== */
 .controls {
   margin-top: 20px;
   display: flex;
@@ -136,19 +163,25 @@ body {
   padding: 8px 16px;
   border-radius: 999px;
   cursor: pointer;
+  font-size: 13px;
 }
 
-#clear-btn { border-color: #ef4444; }
+#clear-btn {
+  border-color: #ef4444;
+}
 
-/* =========================
-   Export Output
-========================= */
+.output-section {
+  margin-top: 18px;
+}
+
 .output-section textarea {
   width: 100%;
   min-height: 150px;
   background: #020617;
-  border: 1px solid #4b5563;
   border-radius: 10px;
+  border: 1px solid #4b5563;
   padding: 10px;
-  color: white;
+  color: #f9fafb;
+  font-size: 12px;
+  resize: vertical;
 }

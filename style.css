@@ -1,184 +1,267 @@
 /* =========================
-   GLOBAL (Dark Navy Theme)
+   GLOBAL LAYOUT
 ========================= */
+
 body {
   margin: 0;
   padding: 0;
-  background: #050509;
-  color: #f5f5f5;
+  background: #050509; /* dark background */
+  color: #ecf0f1;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  display: flex;
+  justify-content: center;
 }
 
-.app {
-  max-width: 1100px;
-  margin: 20px auto;
+.app-container {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  max-width: 1500px;
   padding: 20px;
-  background: radial-gradient(circle at top, #0d1220 0%, #02030a 70%);
-  border-radius: 18px;
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  box-shadow: 0 0 40px rgba(0,0,0,0.6);
+  gap: 20px;
 }
 
 /* =========================
-   HEADER
+   LEFT SIDEBAR (Load Builder)
 ========================= */
-.header {
+
+.sidebar {
+  width: 320px;
+  background: rgba(10, 18, 35, 0.82);
+  border-radius: 14px;
+  padding: 18px;
+  border: 1px solid rgba(80, 100, 130, 0.45);
+  box-shadow: 0 0 20px rgba(0,0,0,0.45) inset;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.sidebar h2 {
+  margin: 0 0 5px;
+  font-size: 18px;
+  color: #d1d5db;
+}
+
+.add-load-btn {
+  width: 100%;
+  padding: 10px;
+  background: #0ea5e9;
+  color: #ffffff;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.add-load-btn:hover {
+  background: #38bdf8;
+}
+
+.load-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.load-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: rgba(25, 35, 60, 0.8);
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(70, 90, 120, 0.45);
+}
+
+.load-row select,
+.load-row input {
+  background: #0f172a;
+  color: #e2e8f0;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  padding: 5px;
+  font-size: 13px;
+}
+
+.load-row input {
+  width: 90px;
+}
+
+.load-row select {
+  width: 75px;
+}
+
+.delete-load {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.sidebar-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sidebar-buttons button {
+  padding: 10px;
+  background: #111827;
+  border: 1px solid #475569;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #e5e7eb;
+  font-size: 14px;
+}
+
+.sidebar-buttons .danger {
+  border-color: #ef4444;
+}
+
+/* =========================
+   RIGHT SIDE – Cargo Area
+========================= */
+
+.cargo-area {
+  flex: 1;
+  background: radial-gradient(circle at top, #111827 0%, #020617 75%);
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: 0 0 30px rgba(0,0,0,0.55);
+}
+
+.cargo-area .header {
   text-align: center;
+  margin-bottom: 10px;
+}
+
+.cargo-area h1 {
+  margin: 0;
+  font-size: 22px;
 }
 
 .subtitle {
-  margin-top: 4px;
-  font-size: 14px;
   color: #9ca3af;
+  font-size: 13px;
+  margin-top: 4px;
 }
 
 /* =========================
-   HOLD PANEL (Matches Screenshot)
+   HOLD SECTIONS
 ========================= */
+
 .hold-section {
   margin-top: 28px;
-  padding: 20px;
+  padding: 16px;
+  background: rgba(10, 19, 38, 0.9);
   border-radius: 14px;
-  background: linear-gradient(145deg, rgba(10,15,30,0.85), rgba(5,8,20,0.85));
-  border: 1px solid rgba(90, 105, 135, 0.45);
-  box-shadow: 0 0 20px rgba(0,0,0,0.35) inset;
+  border: 1px solid rgba(75, 85, 99, 0.6);
 }
 
 .hold-section h2 {
-  margin: 0 0 12px;
+  margin: 0 0 10px;
   color: #ffffff;
-  font-weight: 700;
-  letter-spacing: 0.5px;
+  font-weight: 600;
 }
 
 /* =========================
-   LEGEND (exact spacing)
+   GRID WIDTHS
 ========================= */
-.legend {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 18px;
-  font-size: 13px;
-  color: #c0c6d3;
+
+.deck-grid {
+  width: 750px;
+  margin: 0 auto;
 }
 
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.legend-box {
-  width: 18px;
-  height: 14px;
-  border-radius: 4px;
-  border: 1px solid #6b7280;
-}
-
-.legend-box.container {
-  background: #00dbc2;
-}
-
-.legend-box.pallet {
-  background: #ffc252;
-}
-
-.legend-box.disabled {
-  background: #233040;
+.aft-grid {
+  width: 620px;
 }
 
 /* =========================
-   GRIDS
+   ROW LAYOUT
 ========================= */
-.hold-section:nth-of-type(1) .deck-grid { width: 750px; margin: 0 auto; }
-.hold-section:nth-of-type(2) .deck-grid { width: 620px; margin: 0 auto; }
 
-/* =========================
-   ROWS
-========================= */
 .ake-row,
 .pallet-row {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   margin-bottom: 10px;
 }
 
 /* =========================
-   SLOT BOXES (THE IMPORTANT PART)
+   SLOT BASE STYLE
 ========================= */
+
 .slot {
-  width: 70px;
-  height: 46px;
-  background: #0f172a;                 /* EXACT glossy dark blue */
-  border: 1px solid #364155;           /* Correct border color */
-  border-radius: 8px;
-  color: #cfd6e4;
+  height: 48px;
+  border-radius: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 13px;
+  color: #dbe2f0;
   position: relative;
-  transition: 0.15s;
+  font-size: 13px;
+  cursor: default;
+  transition: 0.12s ease-out;
 }
 
+/* slot label above */
 .slot::before {
   content: attr(data-pos);
   position: absolute;
-  top: 3px;
-  left: 5px;
+  top: -14px;
   font-size: 10px;
-  color: #98a4b7;
-}
-
-/* PALLET WIDTH (uniform) */
-.slot.pallet { width: 110px; }
-
-/* HIGHLIGHT ON CLICKED AKE/PALLET */
-.slot.has-uld {
-  background: rgba(30, 255, 180, 0.12);
-  border-color: #22c55e;
-  box-shadow: 0 0 8px rgba(34, 197, 94, 0.35);
-}
-
-/* DISABLED POSITIONS */
-.slot.disabled {
-  opacity: 0.3;
-  pointer-events: none;
+  color: #8ea0c5;
 }
 
 /* =========================
-   CONTROLS
+   AKE LOOK – Blue Glow
 ========================= */
-.controls {
-  margin-top: 20px;
-  display: flex;
-  gap: 10px;
+
+.slot.ake {
+  width: 70px;
+  background: #112037;
+  border: 1px solid rgba(0, 180, 255, 0.45);
+  box-shadow:
+    inset 0 0 6px rgba(0, 200, 255, 0.12),
+    0 0 6px rgba(0, 200, 255, 0.22);
 }
 
-.controls button {
+.slot.ake.has-uld {
+  background: rgba(0, 200, 255, 0.15);
+  border-color: #22c55e;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.45);
+}
+
+/* =========================
+   PALLET LOOK – Warm Grey/Brown
+========================= */
+
+.slot.pallet {
+  width: 110px;
   background: #0f172a;
-  border: 1px solid #475569;
-  color: #e2e8f0;
-  padding: 8px 16px;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: 0.2s;
+  border: 1px solid rgba(180, 150, 120, 0.45);
 }
 
-.controls button:hover {
-  background: #1e293b;
+.slot.pallet.has-uld {
+  background: rgba(200, 160, 120, 0.18);
+  border-color: #22c55e;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.45);
 }
 
-#clear-btn { border-color: #ef4444; }
+/* =========================
+   DISABLED SLOTS
+========================= */
 
-.output-section textarea {
-  width: 100%;
-  min-height: 160px;
-  background: #020617;
-  border: 1px solid #475569;
-  border-radius: 8px;
-  padding: 10px;
-  color: #e5e7eb;
-  font-size: 12px;
+.slot.disabled {
+  opacity: 0.28;
+  pointer-events: none;
+  box-shadow: none !important;
+  border-color: #475569 !important;
 }

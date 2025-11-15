@@ -1,9 +1,7 @@
-// All positions tracked here
+// Track all positions
 const state = {};
 
-// ----- BLOCKING RULES -----
-
-// Forward + Aft
+// Forward + Aft blocking logic
 const palletBlocks = {
   // Forward
   "24P": ["26L","26R","25L","25R"],
@@ -12,6 +10,7 @@ const palletBlocks = {
   "21P": ["21L","21R","22L","22R"],
   "12P": ["13L","13R","12L","12R"],
   "11P": ["12L","12R","11L","11R"],
+
   // Aft
   "42P": ["43L","43R","42L","42R"],
   "41P": ["42L","42R","41L","41R"],
@@ -20,7 +19,7 @@ const palletBlocks = {
   "31P": ["31L","31R"]
 };
 
-// Reverse map containers → pallets they block
+// Reverse map: containers block pallets
 const containerBlocks = {};
 for (const [p, list] of Object.entries(palletBlocks)) {
   list.forEach(c => {
@@ -29,36 +28,31 @@ for (const [p, list] of Object.entries(palletBlocks)) {
   });
 }
 
-// Allowed types
 function allowedTypes(pos) {
-  return pos.endsWith("P")
-    ? ["","PAG","PMC","PAJ"]
-    : ["","AKE"];
+  return pos.endsWith("P") ? ["","PAG","PMC","PAJ"] : ["","AKE"];
 }
 
-// Init
 function initState() {
-  document.querySelectorAll(".slot").forEach(slot => {
-    state[slot.dataset.pos] = { value:"", disabled:false };
+  document.querySelectorAll(".slot").forEach(s => {
+    state[s.dataset.pos] = { value:"", disabled:false };
   });
   render();
 }
 
 function recomputeDisabled() {
-  // reset all
   for (const pos in state) state[pos].disabled = false;
 
   // pallets block containers
-  for (const [p, blocks] of Object.entries(palletBlocks)) {
+  for (const [p, items] of Object.entries(palletBlocks)) {
     if (state[p].value) {
-      blocks.forEach(c => state[c].disabled = true);
+      items.forEach(c => state[c].disabled = true);
     }
   }
 
   // containers block pallets
-  for (const [c, blocks] of Object.entries(containerBlocks)) {
+  for (const [c, items] of Object.entries(containerBlocks)) {
     if (state[c].value) {
-      blocks.forEach(p => state[p].disabled = true);
+      items.forEach(p => state[p].disabled = true);
     }
   }
 }
@@ -74,54 +68,52 @@ function render() {
   });
 }
 
-function handleClick(e) {
+function handleSlotClick(e) {
   const el = e.currentTarget;
   const pos = el.dataset.pos;
   const st = state[pos];
 
   if (st.disabled) {
-    alert(`${pos} is blocked by another position.`);
+    alert(`${pos} blocked.`);
     return;
   }
 
-  const types = allowedTypes(pos);
-  const input = prompt(
-    `Position ${pos}\nAllowed: ${types.filter(t=>t).join(" / ")}\n\nEnter value or leave empty to clear:`,
+  const allowed = allowedTypes(pos);
+  const val = prompt(
+    `Position ${pos}\nAllowed: ${allowed.filter(x=>x).join(" / ")}\n\nEnter ULD:`,
     st.value
   );
 
-  if (input === null) return;
+  if (val === null) return;
 
-  const val = input.trim().toUpperCase();
-  if (val && !types.includes(val)) {
-    alert(`Invalid ULD type.`);
+  const input = val.trim().toUpperCase();
+  if (input && !allowed.includes(input)) {
+    alert("Not allowed.");
     return;
   }
 
-  // Conflicts
+  // Check conflicts
   if (pos.endsWith("P")) {
-    const blocked = palletBlocks[pos] || [];
-    const conflict = blocked.filter(c => state[c].value);
-    if (conflict.length) {
-      alert(`Cannot place ${val} in ${pos}. Conflicts with: ${conflict.join(", ")}`);
+    const block = palletBlocks[pos] || [];
+    if (block.some(c => state[c].value)) {
+      alert(`Conflict with: ${block.join(", ")}`);
       return;
     }
   } else {
-    const pz = containerBlocks[pos] || [];
-    const conflicts = pz.filter(p => state[p].value);
-    if (conflicts.length) {
-      alert(`Cannot place ${val}. Conflicts with pallets: ${conflicts.join(", ")}`);
+    const block = containerBlocks[pos] || [];
+    if (block.some(p => state[p].value)) {
+      alert(`Conflict with pallets: ${block.join(", ")}`);
       return;
     }
   }
 
-  st.value = val;
+  st.value = input;
   recomputeDisabled();
   render();
 }
 
 function clearAll() {
-  if (!confirm("Clear all?")) return;
+  if (!confirm("Clear layout?")) return;
   for (const pos in state) {
     state[pos].value = "";
     state[pos].disabled = false;
@@ -130,23 +122,20 @@ function clearAll() {
 }
 
 function exportLayout() {
-  let out = "EXPORT LIR\n===========\n\n";
-
+  let out = "LIR EXPORT\n===========\n\n";
   for (const pos in state) {
     if (state[pos].value) {
       out += `${pos}: ${state[pos].value}\n`;
     }
   }
-
   document.getElementById("export-output").value = out;
   navigator.clipboard.writeText(out);
-  alert("Export copied to clipboard.");
+  alert("Copied to clipboard.");
 }
 
-// Init
 window.addEventListener("DOMContentLoaded", () => {
   initState();
-  document.querySelectorAll(".slot").forEach(s => s.addEventListener("click", handleClick));
+  document.querySelectorAll(".slot").forEach(s => s.addEventListener("click", handleSlotClick));
   document.getElementById("clear-btn").addEventListener("click", clearAll);
   document.getElementById("export-btn").addEventListener("click", exportLayout);
 });

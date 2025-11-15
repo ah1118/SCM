@@ -1,267 +1,279 @@
-/* =========================
-   GLOBAL LAYOUT
-========================= */
+/* ==========================================================
+   GLOBAL DATA STORAGE
+========================================================== */
 
-body {
-  margin: 0;
-  padding: 0;
-  background: #050509; /* dark background */
-  color: #ecf0f1;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  display: flex;
-  justify-content: center;
+let loads = []; // each load = { id, type, uldid, position }
+let loadCounter = 1;
+
+/* ==========================================================
+   BLOCKING LOGIC (your full rules)
+========================================================== */
+
+const palletBlocks = {
+  // Forward
+  "24P": ["26L","26R","25L","25R"],
+  "23P": ["25L","25R","24L","24R"],
+  "22P": ["22L","22R","23L","23R"],
+  "21P": ["21L","21R","22L","22R"],
+  "12P": ["13L","13R","12L","12R"],
+  "11P": ["12L","12R","11L","11R"],
+
+  // Aft
+  "42P": ["43L","43R","42L","42R"],
+  "41P": ["42L","42R","41L","41R"],
+  "33P": ["34L","34R","33L","33R"],
+  "32P": ["33L","33R","32L","32R"],
+  "31P": ["31L","31R"]
+};
+
+/* Build reverse mapping: container → which P blocks it */
+const containerBlocks = {};
+
+for (const [p, contList] of Object.entries(palletBlocks)) {
+  contList.forEach(c => {
+    if (!containerBlocks[c]) containerBlocks[c] = [];
+    containerBlocks[c].push(p);
+  });
 }
 
-.app-container {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  max-width: 1500px;
-  padding: 20px;
-  gap: 20px;
+/* ==========================================================
+   INITIALIZE INTERFACE
+========================================================== */
+
+window.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("addLoadBtn").addEventListener("click", addLoadRow);
+  document.getElementById("clearAllBtn").addEventListener("click", clearAllLoads);
+  document.getElementById("exportBtn").addEventListener("click", exportLayout);
+
+  updateCargoDeck();
+});
+
+/* ==========================================================
+   ADD LOAD ROW
+========================================================== */
+
+function addLoadRow() {
+  const loadList = document.getElementById("loadList");
+
+  const div = document.createElement("div");
+  div.className = "load-row";
+  div.dataset.loadid = loadCounter;
+
+  div.innerHTML = `
+    <select class="load-type">
+      <option value="AKE">AKE</option>
+      <option value="AKN">AKN</option>
+      <option value="PAG">PAG</option>
+      <option value="PMC">PMC</option>
+      <option value="PAJ">PAJ</option>
+    </select>
+
+    <input type="text" class="load-uldid" placeholder="ULD ID">
+
+    <select class="load-pos">
+      <option value="">--POS--</option>
+      ${generatePositionOptions()}
+    </select>
+
+    <button class="delete-load">X</button>
+  `;
+
+  // Attach listeners
+  div.querySelector(".load-pos").addEventListener("change", onLoadUpdated);
+  div.querySelector(".load-type").addEventListener("change", onLoadUpdated);
+  div.querySelector(".load-uldid").addEventListener("input", onLoadUpdated);
+
+  div.querySelector(".delete-load").addEventListener("click", () => {
+    deleteLoad(div.dataset.loadid);
+  });
+
+  loadList.appendChild(div);
+
+  // Add to memory
+  loads.push({
+    id: loadCounter,
+    type: "AKE",
+    uldid: "",
+    position: ""
+  });
+
+  loadCounter++;
 }
 
-/* =========================
-   LEFT SIDEBAR (Load Builder)
-========================= */
+/* ==========================================================
+   GENERATE POSITION DROPDOWN
+========================================================== */
 
-.sidebar {
-  width: 320px;
-  background: rgba(10, 18, 35, 0.82);
-  border-radius: 14px;
-  padding: 18px;
-  border: 1px solid rgba(80, 100, 130, 0.45);
-  box-shadow: 0 0 20px rgba(0,0,0,0.45) inset;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
+function generatePositionOptions() {
+  const positions = [
+    "26L","25L","24L","23L","22L","21L","13L","12L","11L",
+    "26R","25R","24R","23R","22R","21R","13R","12R","11R",
+    "24P","23P","22P","21P","12P","11P",
+    "43L","42L","41L","34L","33L","32L","31L",
+    "43R","42R","41R","34R","33R","32R","31R",
+    "42P","41P","33P","32P","31P"
+  ];
+
+  return positions.map(p => `<option value="${p}">${p}</option>`).join("");
 }
 
-.sidebar h2 {
-  margin: 0 0 5px;
-  font-size: 18px;
-  color: #d1d5db;
+/* ==========================================================
+   LOAD UPDATED (type, id, or position changed)
+========================================================== */
+
+function onLoadUpdated(e) {
+  const row = e.target.closest(".load-row");
+  const id = parseInt(row.dataset.loadid);
+
+  const type = row.querySelector(".load-type").value.trim();
+  const uldid = row.querySelector(".load-uldid").value.trim().toUpperCase();
+  const pos = row.querySelector(".load-pos").value;
+
+  // Update memory
+  const load = loads.find(l => l.id === id);
+  load.type = type;
+  load.uldid = uldid;
+  load.position = pos;
+
+  // Block logic check
+  if (pos && isPositionBlocked(load)) {
+    alert(`Position ${pos} is blocked by another ULD.`);
+    row.querySelector(".load-pos").value = "";
+    load.position = "";
+    updateCargoDeck();
+    return;
+  }
+
+  updateCargoDeck();
 }
 
-.add-load-btn {
-  width: 100%;
-  padding: 10px;
-  background: #0ea5e9;
-  color: #ffffff;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 14px;
+/* ==========================================================
+   CHECK BLOCKING RULES
+========================================================== */
+
+function isPositionBlocked(load) {
+  if (!load.position) return false;
+
+  const pos = load.position;
+  const type = load.type;
+
+  // If pallet, check container conflicts
+  if (type === "PAG" || type === "PMC" || type === "PAJ") {
+    const blocks = palletBlocks[pos] || [];
+    for (const c of blocks) {
+      if (slotOccupied(c)) return true;
+    }
+  }
+
+  // If container, check pallet conflicts
+  if (type === "AKE" || type === "AKN") {
+    const pallets = containerBlocks[pos] || [];
+    for (const p of pallets) {
+      if (slotOccupied(p)) return true;
+    }
+  }
+
+  return false;
 }
 
-.add-load-btn:hover {
-  background: #38bdf8;
+function slotOccupied(position) {
+  return loads.some(l => l.position === position && l.uldid !== "");
 }
 
-.load-list {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+/* ==========================================================
+   UPDATE CARGO DECK UI
+========================================================== */
+
+function updateCargoDeck() {
+  // Reset all slots
+  document.querySelectorAll(".slot").forEach(slot => {
+    slot.innerHTML = "";
+    slot.classList.remove("has-uld");
+  });
+
+  // Place loads
+  for (const load of loads) {
+    if (load.position && load.uldid) {
+      const s = document.querySelector(`.slot[data-pos="${load.position}"]`);
+      if (s) {
+        s.innerHTML = load.uldid;
+        s.classList.add("has-uld");
+      }
+    }
+  }
+
+  // Apply disabled states
+  applyBlockingVisuals();
 }
 
-.load-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  background: rgba(25, 35, 60, 0.8);
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid rgba(70, 90, 120, 0.45);
+/* ==========================================================
+   APPLY BLOCKED VISUALS
+========================================================== */
+
+function applyBlockingVisuals() {
+  // reset
+  document.querySelectorAll(".slot").forEach(s => {
+    s.classList.remove("disabled");
+  });
+
+  // mark disabled
+  for (const load of loads) {
+    if (!load.position) continue;
+
+    const pos = load.position;
+
+    if (load.type === "PAG" || load.type === "PMC" || load.type === "PAJ") {
+      const toBlock = palletBlocks[pos] || [];
+      toBlock.forEach(c => disableSlot(c));
+    } else {
+      const toBlock = containerBlocks[pos] || [];
+      toBlock.forEach(p => disableSlot(p));
+    }
+  }
 }
 
-.load-row select,
-.load-row input {
-  background: #0f172a;
-  color: #e2e8f0;
-  border: 1px solid #475569;
-  border-radius: 6px;
-  padding: 5px;
-  font-size: 13px;
+function disableSlot(position) {
+  const s = document.querySelector(`.slot[data-pos="${position}"]`);
+  if (s) s.classList.add("disabled");
 }
 
-.load-row input {
-  width: 90px;
+/* ==========================================================
+   DELETE LOAD
+========================================================== */
+
+function deleteLoad(id) {
+  loads = loads.filter(l => l.id !== parseInt(id));
+
+  document.querySelector(`.load-row[data-loadid="${id}"]`).remove();
+
+  updateCargoDeck();
 }
 
-.load-row select {
-  width: 75px;
+/* ==========================================================
+   CLEAR ALL
+========================================================== */
+
+function clearAllLoads() {
+  if (!confirm("Clear ALL loads?")) return;
+
+  loads = [];
+  document.getElementById("loadList").innerHTML = "";
+  updateCargoDeck();
 }
 
-.delete-load {
-  background: #ef4444;
-  color: white;
-  border: none;
-  padding: 4px 8px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 12px;
-}
+/* ==========================================================
+   EXPORT
+========================================================== */
 
-.sidebar-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+function exportLayout() {
+  let output = "LIR EXPORT\n===============\n\n";
 
-.sidebar-buttons button {
-  padding: 10px;
-  background: #111827;
-  border: 1px solid #475569;
-  border-radius: 8px;
-  cursor: pointer;
-  color: #e5e7eb;
-  font-size: 14px;
-}
+  for (const load of loads) {
+    if (load.position && load.uldid) {
+      output += `${load.position}: ${load.uldid}\n`;
+    }
+  }
 
-.sidebar-buttons .danger {
-  border-color: #ef4444;
-}
-
-/* =========================
-   RIGHT SIDE – Cargo Area
-========================= */
-
-.cargo-area {
-  flex: 1;
-  background: radial-gradient(circle at top, #111827 0%, #020617 75%);
-  padding: 20px;
-  border-radius: 16px;
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  box-shadow: 0 0 30px rgba(0,0,0,0.55);
-}
-
-.cargo-area .header {
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-.cargo-area h1 {
-  margin: 0;
-  font-size: 22px;
-}
-
-.subtitle {
-  color: #9ca3af;
-  font-size: 13px;
-  margin-top: 4px;
-}
-
-/* =========================
-   HOLD SECTIONS
-========================= */
-
-.hold-section {
-  margin-top: 28px;
-  padding: 16px;
-  background: rgba(10, 19, 38, 0.9);
-  border-radius: 14px;
-  border: 1px solid rgba(75, 85, 99, 0.6);
-}
-
-.hold-section h2 {
-  margin: 0 0 10px;
-  color: #ffffff;
-  font-weight: 600;
-}
-
-/* =========================
-   GRID WIDTHS
-========================= */
-
-.deck-grid {
-  width: 750px;
-  margin: 0 auto;
-}
-
-.aft-grid {
-  width: 620px;
-}
-
-/* =========================
-   ROW LAYOUT
-========================= */
-
-.ake-row,
-.pallet-row {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-/* =========================
-   SLOT BASE STYLE
-========================= */
-
-.slot {
-  height: 48px;
-  border-radius: 10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #dbe2f0;
-  position: relative;
-  font-size: 13px;
-  cursor: default;
-  transition: 0.12s ease-out;
-}
-
-/* slot label above */
-.slot::before {
-  content: attr(data-pos);
-  position: absolute;
-  top: -14px;
-  font-size: 10px;
-  color: #8ea0c5;
-}
-
-/* =========================
-   AKE LOOK – Blue Glow
-========================= */
-
-.slot.ake {
-  width: 70px;
-  background: #112037;
-  border: 1px solid rgba(0, 180, 255, 0.45);
-  box-shadow:
-    inset 0 0 6px rgba(0, 200, 255, 0.12),
-    0 0 6px rgba(0, 200, 255, 0.22);
-}
-
-.slot.ake.has-uld {
-  background: rgba(0, 200, 255, 0.15);
-  border-color: #22c55e;
-  box-shadow: 0 0 10px rgba(34, 197, 94, 0.45);
-}
-
-/* =========================
-   PALLET LOOK – Warm Grey/Brown
-========================= */
-
-.slot.pallet {
-  width: 110px;
-  background: #0f172a;
-  border: 1px solid rgba(180, 150, 120, 0.45);
-}
-
-.slot.pallet.has-uld {
-  background: rgba(200, 160, 120, 0.18);
-  border-color: #22c55e;
-  box-shadow: 0 0 10px rgba(34, 197, 94, 0.45);
-}
-
-/* =========================
-   DISABLED SLOTS
-========================= */
-
-.slot.disabled {
-  opacity: 0.28;
-  pointer-events: none;
-  box-shadow: none !important;
-  border-color: #475569 !important;
+  alert("Export copied to clipboard.");
+  navigator.clipboard.writeText(output);
 }

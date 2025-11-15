@@ -2,11 +2,27 @@
    GLOBAL DATA STORAGE
 ========================================================== */
 
-let loads = []; // each load = { id, type, uldid, position }
+let loads = [];
 let loadCounter = 1;
 
 /* ==========================================================
-   BLOCKING LOGIC (your full rules)
+   POSITION GROUPS (NEW!)
+========================================================== */
+
+const containerPositions = [
+  "26L","25L","24L","23L","22L","21L","13L","12L","11L",
+  "26R","25R","24R","23R","22R","21R","13R","12R","11R",
+  "43L","42L","41L","34L","33L","32L","31L",
+  "43R","42R","41R","34R","33R","32R","31R"
+];
+
+const palletPositions = [
+  "24P","23P","22P","21P","12P","11P",
+  "42P","41P","33P","32P","31P"
+];
+
+/* ==========================================================
+   BLOCKING LOGIC
 ========================================================== */
 
 const palletBlocks = {
@@ -26,7 +42,6 @@ const palletBlocks = {
   "31P": ["31L","31R"]
 };
 
-/* Build reverse mapping: container → which P blocks it */
 const containerBlocks = {};
 
 for (const [p, contList] of Object.entries(palletBlocks)) {
@@ -37,7 +52,7 @@ for (const [p, contList] of Object.entries(palletBlocks)) {
 }
 
 /* ==========================================================
-   INITIALIZE INTERFACE
+   INITIALIZE
 ========================================================== */
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -53,13 +68,13 @@ window.addEventListener("DOMContentLoaded", () => {
 ========================================================== */
 
 function addLoadRow() {
-  const loadList = document.getElementById("loadList");
+  const list = document.getElementById("loadList");
 
-  const div = document.createElement("div");
-  div.className = "load-row";
-  div.dataset.loadid = loadCounter;
+  const row = document.createElement("div");
+  row.className = "load-row";
+  row.dataset.loadid = loadCounter;
 
-  div.innerHTML = `
+  row.innerHTML = `
     <select class="load-type">
       <option value="AKE">AKE</option>
       <option value="AKN">AKN</option>
@@ -70,26 +85,24 @@ function addLoadRow() {
 
     <input type="text" class="load-uldid" placeholder="ULD ID">
 
-    <select class="load-pos">
-      <option value="">--POS--</option>
-      ${generatePositionOptions()}
-    </select>
+    <select class="load-pos"></select>
 
     <button class="delete-load">X</button>
   `;
 
-  // Attach listeners
-  div.querySelector(".load-pos").addEventListener("change", onLoadUpdated);
-  div.querySelector(".load-type").addEventListener("change", onLoadUpdated);
-  div.querySelector(".load-uldid").addEventListener("input", onLoadUpdated);
+  list.appendChild(row);
 
-  div.querySelector(".delete-load").addEventListener("click", () => {
-    deleteLoad(div.dataset.loadid);
+  /* create initial dropdown for containers */
+  updatePositionDropdown(row, "AKE");
+
+  row.querySelector(".load-type").addEventListener("change", onLoadTypeChanged);
+  row.querySelector(".load-pos").addEventListener("change", onLoadUpdated);
+  row.querySelector(".load-uldid").addEventListener("input", onLoadUpdated);
+
+  row.querySelector(".delete-load").addEventListener("click", () => {
+    deleteLoad(row.dataset.loadid);
   });
 
-  loadList.appendChild(div);
-
-  // Add to memory
   loads.push({
     id: loadCounter,
     type: "AKE",
@@ -101,24 +114,47 @@ function addLoadRow() {
 }
 
 /* ==========================================================
-   GENERATE POSITION DROPDOWN
+   UPDATE DROPDOWN WHEN TYPE CHANGES
 ========================================================== */
 
-function generatePositionOptions() {
-  const positions = [
-    "26L","25L","24L","23L","22L","21L","13L","12L","11L",
-    "26R","25R","24R","23R","22R","21R","13R","12R","11R",
-    "24P","23P","22P","21P","12P","11P",
-    "43L","42L","41L","34L","33L","32L","31L",
-    "43R","42R","41R","34R","33R","32R","31R",
-    "42P","41P","33P","32P","31P"
-  ];
+function onLoadTypeChanged(e) {
+  const row = e.target.closest(".load-row");
+  const id = parseInt(row.dataset.loadid);
+  const type = e.target.value;
 
-  return positions.map(p => `<option value="${p}">${p}</option>`).join("");
+  const load = loads.find(l => l.id === id);
+  load.type = type;
+
+  /* Reset position if incompatible */
+  load.position = "";
+  row.querySelector(".load-pos").value = "";
+
+  /* Rebuild dropdown */
+  updatePositionDropdown(row, type);
+
+  updateCargoDeck();
+}
+
+function updatePositionDropdown(row, type) {
+  const posSelect = row.querySelector(".load-pos");
+  posSelect.innerHTML = ""; // clear
+
+  let options = [];
+
+  if (type === "AKE" || type === "AKN") {
+    options = containerPositions;
+  } else {
+    options = palletPositions;
+  }
+
+  posSelect.innerHTML = `
+    <option value="">--POS--</option>
+    ${options.map(p => `<option value="${p}">${p}</option>`).join("")}
+  `;
 }
 
 /* ==========================================================
-   LOAD UPDATED (type, id, or position changed)
+   LOAD UPDATED
 ========================================================== */
 
 function onLoadUpdated(e) {
@@ -129,13 +165,11 @@ function onLoadUpdated(e) {
   const uldid = row.querySelector(".load-uldid").value.trim().toUpperCase();
   const pos = row.querySelector(".load-pos").value;
 
-  // Update memory
   const load = loads.find(l => l.id === id);
   load.type = type;
   load.uldid = uldid;
   load.position = pos;
 
-  // Block logic check
   if (pos && isPositionBlocked(load)) {
     alert(`Position ${pos} is blocked by another ULD.`);
     row.querySelector(".load-pos").value = "";
@@ -148,7 +182,7 @@ function onLoadUpdated(e) {
 }
 
 /* ==========================================================
-   CHECK BLOCKING RULES
+   BLOCKING RULES
 ========================================================== */
 
 function isPositionBlocked(load) {
@@ -157,7 +191,6 @@ function isPositionBlocked(load) {
   const pos = load.position;
   const type = load.type;
 
-  // If pallet, check container conflicts
   if (type === "PAG" || type === "PMC" || type === "PAJ") {
     const blocks = palletBlocks[pos] || [];
     for (const c of blocks) {
@@ -165,7 +198,6 @@ function isPositionBlocked(load) {
     }
   }
 
-  // If container, check pallet conflicts
   if (type === "AKE" || type === "AKN") {
     const pallets = containerBlocks[pos] || [];
     for (const p of pallets) {
@@ -181,60 +213,49 @@ function slotOccupied(position) {
 }
 
 /* ==========================================================
-   UPDATE CARGO DECK UI
+   RENDER CARGO DECK
 ========================================================== */
 
 function updateCargoDeck() {
-  // Reset all slots
   document.querySelectorAll(".slot").forEach(slot => {
     slot.innerHTML = "";
     slot.classList.remove("has-uld");
   });
 
-  // Place loads
   for (const load of loads) {
     if (load.position && load.uldid) {
-      const s = document.querySelector(`.slot[data-pos="${load.position}"]`);
-      if (s) {
-        s.innerHTML = load.uldid;
-        s.classList.add("has-uld");
+      const slot = document.querySelector(`.slot[data-pos="${load.position}"]`);
+      if (slot) {
+        slot.innerHTML = load.uldid;
+        slot.classList.add("has-uld");
       }
     }
   }
 
-  // Apply disabled states
   applyBlockingVisuals();
 }
 
-/* ==========================================================
-   APPLY BLOCKED VISUALS
-========================================================== */
-
 function applyBlockingVisuals() {
-  // reset
   document.querySelectorAll(".slot").forEach(s => {
     s.classList.remove("disabled");
   });
 
-  // mark disabled
   for (const load of loads) {
     if (!load.position) continue;
 
     const pos = load.position;
 
     if (load.type === "PAG" || load.type === "PMC" || load.type === "PAJ") {
-      const toBlock = palletBlocks[pos] || [];
-      toBlock.forEach(c => disableSlot(c));
+      (palletBlocks[pos] || []).forEach(c => disableSlot(c));
     } else {
-      const toBlock = containerBlocks[pos] || [];
-      toBlock.forEach(p => disableSlot(p));
+      (containerBlocks[pos] || []).forEach(p => disableSlot(p));
     }
   }
 }
 
 function disableSlot(position) {
-  const s = document.querySelector(`.slot[data-pos="${position}"]`);
-  if (s) s.classList.add("disabled");
+  const slot = document.querySelector(`.slot[data-pos="${position}"]`);
+  if (slot) slot.classList.add("disabled");
 }
 
 /* ==========================================================
@@ -243,9 +264,7 @@ function disableSlot(position) {
 
 function deleteLoad(id) {
   loads = loads.filter(l => l.id !== parseInt(id));
-
   document.querySelector(`.load-row[data-loadid="${id}"]`).remove();
-
   updateCargoDeck();
 }
 
@@ -255,7 +274,6 @@ function deleteLoad(id) {
 
 function clearAllLoads() {
   if (!confirm("Clear ALL loads?")) return;
-
   loads = [];
   document.getElementById("loadList").innerHTML = "";
   updateCargoDeck();
@@ -266,14 +284,14 @@ function clearAllLoads() {
 ========================================================== */
 
 function exportLayout() {
-  let output = "LIR EXPORT\n===============\n\n";
+  let out = "LIR EXPORT\n================\n\n";
 
-  for (const load of loads) {
-    if (load.position && load.uldid) {
-      output += `${load.position}: ${load.uldid}\n`;
+  for (const l of loads) {
+    if (l.position && l.uldid) {
+      out += `${l.position}: ${l.uldid}\n`;
     }
   }
 
-  alert("Export copied to clipboard.");
-  navigator.clipboard.writeText(output);
+  navigator.clipboard.writeText(out);
+  alert("Layout exported & copied to clipboard.");
 }

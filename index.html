@@ -1,33 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Visual LIR - A330 Cargo Deck</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="app">
-    <header class="header">
-      <h1>Visual LIR - A330 Cargo Deck</h1>
-      <p class="subtitle">Dark mode · Real AKE/PAG widths · Real blocking zones</p>
-    </header>
 
-    <main>
+<div class="app">
 
-      <!-- ========================================== -->
-      <!--                FORWARD HOLD               -->
-      <!-- ========================================== -->
-      <section class="hold-section">
-        <h2>FORWARD HOLD</h2>
+  <header class="header">
+    <h1>Visual LIR - A330 Cargo Deck</h1>
+    <p class="subtitle">Dark Mode · Real AKE/PAG widths · Real blocking rules</p>
+  </header>
 
-        <div class="legend">
-          <span class="legend-item"><span class="legend-box container"></span>Containers (AKE)</span>
-          <span class="legend-item"><span class="legend-box pallet"></span>Pallets (PAG/PMC/PAJ)</span>
-          <span class="legend-item"><span class="legend-box disabled"></span>Blocked</span>
-        </div>
+  <main>
 
-        <!-- Containers L -->
+    <!-- ========================== -->
+    <!--      FORWARD HOLD         -->
+    <!-- ========================== -->
+    <section class="hold-section">
+      <h2>FORWARD HOLD</h2>
+
+      <div class="legend">
+        <span class="legend-item"><span class="legend-box container"></span> Containers (AKE)</span>
+        <span class="legend-item"><span class="legend-box pallet"></span> Pallets (PAG/PMC/PAJ)</span>
+        <span class="legend-item"><span class="legend-box disabled"></span> Blocked</span>
+      </div>
+
+      <div class="deck-grid">
+
+        <!-- AKE Row L -->
         <div class="ake-row">
           <div class="slot ake" data-pos="26L"></div>
           <div class="slot ake" data-pos="25L"></div>
@@ -40,7 +44,7 @@
           <div class="slot ake" data-pos="11L"></div>
         </div>
 
-        <!-- Containers R -->
+        <!-- AKE Row R -->
         <div class="ake-row">
           <div class="slot ake" data-pos="26R"></div>
           <div class="slot ake" data-pos="25R"></div>
@@ -53,7 +57,7 @@
           <div class="slot ake" data-pos="11R"></div>
         </div>
 
-        <!-- Forward Pallets -->
+        <!-- PALLETS -->
         <div class="pallet-row">
           <div class="slot pallet" data-pos="24P"></div>
           <div class="slot pallet" data-pos="23P"></div>
@@ -62,16 +66,22 @@
           <div class="slot pallet" data-pos="12P"></div>
           <div class="slot pallet" data-pos="11P"></div>
         </div>
-      </section>
+
+      </div><!-- deck-grid -->
+
+    </section>
 
 
-      <!-- ========================================== -->
-      <!--                  AFT HOLD                 -->
-      <!-- ========================================== -->
-      <section class="hold-section">
-        <h2>AFT HOLD</h2>
 
-        <!-- Containers L -->
+    <!-- ========================== -->
+    <!--        AFT HOLD           -->
+    <!-- ========================== -->
+    <section class="hold-section">
+      <h2>AFT HOLD</h2>
+
+      <div class="deck-grid">
+
+        <!-- AKE Row L -->
         <div class="ake-row">
           <div class="slot ake" data-pos="43L"></div>
           <div class="slot ake" data-pos="42L"></div>
@@ -82,7 +92,7 @@
           <div class="slot ake" data-pos="31L"></div>
         </div>
 
-        <!-- Containers R -->
+        <!-- AKE Row R -->
         <div class="ake-row">
           <div class="slot ake" data-pos="43R"></div>
           <div class="slot ake" data-pos="42R"></div>
@@ -93,7 +103,7 @@
           <div class="slot ake" data-pos="31R"></div>
         </div>
 
-        <!-- Aft Pallets -->
+        <!-- PALLETS -->
         <div class="pallet-row">
           <div class="slot pallet" data-pos="42P"></div>
           <div class="slot pallet" data-pos="41P"></div>
@@ -101,25 +111,30 @@
           <div class="slot pallet" data-pos="32P"></div>
           <div class="slot pallet" data-pos="31P"></div>
         </div>
-      </section>
+
+      </div><!-- deck-grid -->
+
+    </section>
 
 
-      <!-- ========================================== -->
-      <!--                CONTROLS                   -->
-      <!-- ========================================== -->
-      <section class="controls">
-        <button id="clear-btn">Clear All</button>
-        <button id="export-btn">Export Layout</button>
-      </section>
 
-      <section class="output-section">
-        <h2>Export Output</h2>
-        <textarea id="export-output" readonly></textarea>
-      </section>
+    <!-- ========================== -->
+    <!--       CONTROLS            -->
+    <!-- ========================== -->
+    <section class="controls">
+      <button id="clear-btn">Clear All</button>
+      <button id="export-btn">Export Layout</button>
+    </section>
 
-    </main>
-  </div>
+    <section class="output-section">
+      <h2>Export Output</h2>
+      <textarea id="export-output" readonly></textarea>
+    </section>
 
-  <script src="script.js"></script>
+  </main>
+</div>
+
+<script src="script.js"></script>
+
 </body>
 </html>

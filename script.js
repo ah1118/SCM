@@ -1,238 +1,152 @@
-// ----- CONFIG: state & rules -----
-
-// All positions are initialized empty
+// All positions tracked here
 const state = {};
 
-// Pallet -> blocked containers (your rules)
+// ----- BLOCKING RULES -----
+
+// Forward + Aft
 const palletBlocks = {
   // Forward
-  "24P": ["26L", "26R", "25L", "25R"],
-  "23P": ["25L", "25R", "24L", "24R"],
-  "22P": ["22L", "22R", "23L", "23R"],
-  "21P": ["21L", "21R", "22L", "22R"],
-  "12P": ["13L", "13R", "12L", "12R"],
-  "11P": ["12L", "12R", "11L", "11R"],
+  "24P": ["26L","26R","25L","25R"],
+  "23P": ["25L","25R","24L","24R"],
+  "22P": ["22L","22R","23L","23R"],
+  "21P": ["21L","21R","22L","22R"],
+  "12P": ["13L","13R","12L","12R"],
+  "11P": ["12L","12R","11L","11R"],
   // Aft
-  "42P": ["43L", "43R", "42L", "42R"],
-  "41P": ["42L", "42R", "41L", "41R"],
-  "33P": ["34L", "34R", "33L", "33R"],
-  "32P": ["33L", "33R", "32L", "32R"],
-  "31P": ["31L", "31R"],
+  "42P": ["43L","43R","42L","42R"],
+  "41P": ["42L","42R","41L","41R"],
+  "33P": ["34L","34R","33L","33R"],
+  "32P": ["33L","33R","32L","32R"],
+  "31P": ["31L","31R"]
 };
 
-// Build inverse: container -> blocking pallets
+// Reverse map containers → pallets they block
 const containerBlocks = {};
-for (const [pallet, containers] of Object.entries(palletBlocks)) {
-  containers.forEach((c) => {
+for (const [p, list] of Object.entries(palletBlocks)) {
+  list.forEach(c => {
     if (!containerBlocks[c]) containerBlocks[c] = [];
-    containerBlocks[c].push(pallet);
+    containerBlocks[c].push(p);
   });
 }
 
-// Helper: detect pallet vs container
-function isPallet(pos) {
-  return pos.endsWith("P");
+// Allowed types
+function allowedTypes(pos) {
+  return pos.endsWith("P")
+    ? ["","PAG","PMC","PAJ"]
+    : ["","AKE"];
 }
 
-// Allowed types per position
-function getAllowedTypes(pos) {
-  if (isPallet(pos)) {
-    return ["", "PAG", "PMC", "PAJ"]; // "" = clear
-  } else {
-    return ["", "AKE"]; // container positions: AKE or empty
-  }
-}
-
-// Nicely formatted list for prompt
-function allowedLabel(pos) {
-  const allowed = getAllowedTypes(pos).filter((v) => v !== "");
-  return allowed.join(" / ");
-}
-
-// ----- STATE MANAGEMENT -----
-
+// Init
 function initState() {
-  document.querySelectorAll(".slot").forEach((el) => {
-    const pos = el.dataset.pos;
-    state[pos] = { value: "", disabled: false };
+  document.querySelectorAll(".slot").forEach(slot => {
+    state[slot.dataset.pos] = { value:"", disabled:false };
   });
+  render();
 }
 
 function recomputeDisabled() {
-  // Reset all disabled flags
-  Object.keys(state).forEach((pos) => {
-    state[pos].disabled = false;
-  });
+  // reset all
+  for (const pos in state) state[pos].disabled = false;
 
-  // 1) Pallets block containers
-  for (const [pallet, containers] of Object.entries(palletBlocks)) {
-    if (state[pallet]?.value) {
-      containers.forEach((c) => {
-        if (c !== pallet) {
-          state[c].disabled = true;
-        }
-      });
+  // pallets block containers
+  for (const [p, blocks] of Object.entries(palletBlocks)) {
+    if (state[p].value) {
+      blocks.forEach(c => state[c].disabled = true);
     }
   }
 
-  // 2) Containers block pallets
-  for (const [container, pallets] of Object.entries(containerBlocks)) {
-    if (state[container]?.value) {
-      pallets.forEach((p) => {
-        if (p !== container) {
-          state[p].disabled = true;
-        }
-      });
+  // containers block pallets
+  for (const [c, blocks] of Object.entries(containerBlocks)) {
+    if (state[c].value) {
+      blocks.forEach(p => state[p].disabled = true);
     }
   }
 }
 
 function render() {
-  document.querySelectorAll(".slot").forEach((el) => {
-    const pos = el.dataset.pos;
-    const s = state[pos];
+  document.querySelectorAll(".slot").forEach(slot => {
+    const pos = slot.dataset.pos;
+    const st = state[pos];
 
-    el.classList.toggle("disabled", !!s.disabled);
-    el.classList.toggle("has-uld", !!s.value);
-    el.textContent = s.value || "";
-    // we keep the pos label in ::before
+    slot.classList.toggle("disabled", st.disabled);
+    slot.classList.toggle("has-uld", !!st.value);
+    slot.textContent = st.value ? st.value : "";
   });
 }
 
-// ----- INTERACTION -----
-
-function handleSlotClick(e) {
+function handleClick(e) {
   const el = e.currentTarget;
   const pos = el.dataset.pos;
-  const s = state[pos];
+  const st = state[pos];
 
-  if (s.disabled) {
-    alert(`Position ${pos} is blocked by another ULD.`);
+  if (st.disabled) {
+    alert(`${pos} is blocked by another position.`);
     return;
   }
 
-  const allowed = getAllowedTypes(pos);
-  const label = allowedLabel(pos);
-
-  const current = s.value ? ` (current: ${s.value})` : "";
+  const types = allowedTypes(pos);
   const input = prompt(
-    `Position ${pos}\nAllowed: ${label}\n\nType one of them, or leave empty to clear.${current}`,
-    s.value
+    `Position ${pos}\nAllowed: ${types.filter(t=>t).join(" / ")}\n\nEnter value or leave empty to clear:`,
+    st.value
   );
 
-  if (input === null) return; // user cancelled
+  if (input === null) return;
 
-  const raw = input.trim().toUpperCase();
-
-  // Clear
-  if (raw === "") {
-    s.value = "";
-    recomputeDisabled();
-    render();
+  const val = input.trim().toUpperCase();
+  if (val && !types.includes(val)) {
+    alert(`Invalid ULD type.`);
     return;
   }
 
-  // Validate against allowed
-  if (!allowed.includes(raw)) {
-    alert(`Invalid ULD type for ${pos}. Allowed: ${label}`);
-    return;
-  }
-
-  // Check conflicts BEFORE committing
-  if (isPallet(pos)) {
-    // This pallet conflicts with some containers
-    const containers = palletBlocks[pos] || [];
-    const usedContainers = containers.filter((c) => state[c]?.value);
-    if (usedContainers.length > 0) {
-      alert(
-        `Cannot place ${raw} in ${pos}.\nConflicting containers already used: ${usedContainers.join(
-          ", "
-        )}`
-      );
+  // Conflicts
+  if (pos.endsWith("P")) {
+    const blocked = palletBlocks[pos] || [];
+    const conflict = blocked.filter(c => state[c].value);
+    if (conflict.length) {
+      alert(`Cannot place ${val} in ${pos}. Conflicts with: ${conflict.join(", ")}`);
       return;
     }
   } else {
-    // Container: check blocking pallets
-    const pallets = containerBlocks[pos] || [];
-    const usedPallets = pallets.filter((p) => state[p]?.value);
-    if (usedPallets.length > 0) {
-      alert(
-        `Cannot place ${raw} in ${pos}.\nConflicting pallets already used: ${usedPallets.join(
-          ", "
-        )}`
-      );
+    const pz = containerBlocks[pos] || [];
+    const conflicts = pz.filter(p => state[p].value);
+    if (conflicts.length) {
+      alert(`Cannot place ${val}. Conflicts with pallets: ${conflicts.join(", ")}`);
       return;
     }
   }
 
-  // Commit value
-  s.value = raw;
+  st.value = val;
   recomputeDisabled();
   render();
 }
 
-// Clear all
 function clearAll() {
-  if (!confirm("Clear all ULDs from the layout?")) return;
-  Object.keys(state).forEach((pos) => {
+  if (!confirm("Clear all?")) return;
+  for (const pos in state) {
     state[pos].value = "";
     state[pos].disabled = false;
-  });
+  }
   render();
 }
 
-// Export: simple text summary (you can adapt later to CPM format)
 function exportLayout() {
-  const lines = [];
-  lines.push("VISUAL LIR EXPORT");
-  lines.push("=================");
-  lines.push("");
+  let out = "EXPORT LIR\n===========\n\n";
 
-  lines.push("FORWARD HOLD:");
-  Object.keys(state)
-    .filter((p) => p.match(/^[12][0-9LRP]|13[LR]|11[LRP]/)) // rough filter forward
-    .sort()
-    .forEach((pos) => {
-      const v = state[pos].value;
-      if (v) {
-        lines.push(`${pos}: ${v}`);
-      }
-    });
-
-  lines.push("");
-  lines.push("AFT HOLD:");
-  Object.keys(state)
-    .filter((p) => p.match(/^(3|4)[0-9LRP]/)) // rough filter aft
-    .sort()
-    .forEach((pos) => {
-      const v = state[pos].value;
-      if (v) {
-        lines.push(`${pos}: ${v}`);
-      }
-    });
-
-  const text = lines.join("\n");
-  const textarea = document.getElementById("export-output");
-  textarea.value = text;
-
-  // Copy to clipboard if available
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).catch(() => {});
+  for (const pos in state) {
+    if (state[pos].value) {
+      out += `${pos}: ${state[pos].value}\n`;
+    }
   }
-  alert("Layout exported. Text copied to clipboard.");
+
+  document.getElementById("export-output").value = out;
+  navigator.clipboard.writeText(out);
+  alert("Export copied to clipboard.");
 }
 
-// ----- INIT -----
-
+// Init
 window.addEventListener("DOMContentLoaded", () => {
   initState();
-  recomputeDisabled();
-  render();
-
-  document.querySelectorAll(".slot").forEach((el) => {
-    el.addEventListener("click", handleSlotClick);
-  });
-
+  document.querySelectorAll(".slot").forEach(s => s.addEventListener("click", handleClick));
   document.getElementById("clear-btn").addEventListener("click", clearAll);
   document.getElementById("export-btn").addEventListener("click", exportLayout);
 });

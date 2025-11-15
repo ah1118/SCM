@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>A330 Cargo Hold Planner</title>
+  <title>Visual LIR - A330 Cargo Deck</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
 </head>
 
@@ -10,52 +11,63 @@
 
 <div class="app-container">
 
-  <!-- ================================================ -->
-  <!-- LEFT SIDE — LOAD BUILDER PANEL                  -->
-  <!-- ================================================ -->
+  <!-- ============================ -->
+  <!--      LEFT SIDEBAR           -->
+  <!-- ============================ -->
   <aside class="sidebar">
 
     <h2>Load Builder</h2>
 
-    <!-- Add Load Button -->
+    <!-- Add Load -->
     <button id="addLoadBtn" class="add-load-btn">+ Add Load</button>
 
-    <!-- Dynamic list of loads -->
+    <!-- Dynamic Load List -->
     <div id="loadList" class="load-list"></div>
 
-    <!-- Export + Clear Buttons -->
+    <!-- Buttons -->
     <div class="sidebar-buttons">
       <button id="export-btn">Export Layout</button>
       <button id="clear-btn" class="danger">Clear All</button>
     </div>
 
-    <!-- Exported text -->
-    <textarea id="export-output" placeholder="Export output will appear here..."></textarea>
+    <!-- Export Output -->
+    <textarea id="export-output" readonly placeholder="Export output will appear here..."></textarea>
 
   </aside>
 
 
-
-  <!-- ================================================ -->
-  <!-- RIGHT SIDE — CARGO HOLD SCHEMATIC               -->
-  <!-- ================================================ -->
+  <!-- ============================ -->
+  <!--       RIGHT CARGO AREA      -->
+  <!-- ============================ -->
   <main class="cargo-area">
 
-    <div class="header">
-      <h1>A330 Cargo Hold Planner</h1>
-      <p class="subtitle">Drag & Drop • Blocking Logic • AKE / PMC rules</p>
-    </div>
+    <header class="header">
+      <h1>Visual LIR - A330 Cargo Deck</h1>
+      <p class="subtitle">Dark mode · Real AKE/PAG widths · Real blocking zones</p>
+    </header>
 
 
-    <!-- ========================= -->
-    <!-- FORWARD HOLD             -->
-    <!-- ========================= -->
+    <!-- ================================== -->
+    <!--            FORWARD HOLD            -->
+    <!-- ================================== -->
     <section class="hold-section">
-      <h2>Forward Hold</h2>
+      <h2>FORWARD HOLD</h2>
+
+      <div class="legend">
+        <span class="legend-item">
+          <span class="legend-box container"></span> Containers (AKE)
+        </span>
+        <span class="legend-item">
+          <span class="legend-box pallet"></span> Pallets (PAG/PMC/PAJ)
+        </span>
+        <span class="legend-item">
+          <span class="legend-box disabled"></span> Blocked
+        </span>
+      </div>
 
       <div class="deck-grid">
 
-        <!-- LEFT AKE ROW -->
+        <!-- AKE Row L -->
         <div class="ake-row">
           <div class="slot ake" data-pos="26L"></div>
           <div class="slot ake" data-pos="25L"></div>
@@ -68,7 +80,7 @@
           <div class="slot ake" data-pos="11L"></div>
         </div>
 
-        <!-- RIGHT AKE ROW -->
+        <!-- AKE Row R -->
         <div class="ake-row">
           <div class="slot ake" data-pos="26R"></div>
           <div class="slot ake" data-pos="25R"></div>
@@ -81,7 +93,7 @@
           <div class="slot ake" data-pos="11R"></div>
         </div>
 
-        <!-- PALLET ROW -->
+        <!-- Forward Pallets -->
         <div class="pallet-row">
           <div class="slot pallet" data-pos="24P"></div>
           <div class="slot pallet" data-pos="23P"></div>
@@ -91,21 +103,19 @@
           <div class="slot pallet" data-pos="11P"></div>
         </div>
 
-      </div>
-
+      </div><!-- /deck-grid -->
     </section>
 
 
-
-    <!-- ========================= -->
-    <!-- AFT HOLD                 -->
-    <!-- ========================= -->
+    <!-- ================================== -->
+    <!--              AFT HOLD              -->
+    <!-- ================================== -->
     <section class="hold-section">
-      <h2>Aft Hold</h2>
+      <h2>AFT HOLD</h2>
 
       <div class="deck-grid aft-grid">
 
-        <!-- LEFT AKE ROW -->
+        <!-- AKE Row L -->
         <div class="ake-row">
           <div class="slot ake" data-pos="43L"></div>
           <div class="slot ake" data-pos="42L"></div>
@@ -116,7 +126,7 @@
           <div class="slot ake" data-pos="31L"></div>
         </div>
 
-        <!-- RIGHT AKE ROW -->
+        <!-- AKE Row R -->
         <div class="ake-row">
           <div class="slot ake" data-pos="43R"></div>
           <div class="slot ake" data-pos="42R"></div>
@@ -127,7 +137,7 @@
           <div class="slot ake" data-pos="31R"></div>
         </div>
 
-        <!-- PALLET ROW -->
+        <!-- Aft Pallets -->
         <div class="pallet-row">
           <div class="slot pallet" data-pos="42P"></div>
           <div class="slot pallet" data-pos="41P"></div>
@@ -136,15 +146,13 @@
           <div class="slot pallet" data-pos="31P"></div>
         </div>
 
-      </div>
-
+      </div><!-- /aft-grid -->
     </section>
 
   </main>
 
-</div>
+</div><!-- /app-container -->
 
 <script src="script.js"></script>
-
 </body>
 </html>

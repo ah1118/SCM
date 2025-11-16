@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Visual LIR - A330 Cargo Deck</title>
+  <title>Visual LIR - Cargo Deck Builder</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -17,6 +17,13 @@
   <aside class="sidebar">
 
     <h2>Load Builder</h2>
+
+    <!-- Aircraft selector -->
+    <label style="color:#ccc; font-size:13px;">Select Aircraft:</label>
+    <select id="aircraftSelect" class="aircraft-select">
+      <option value="ec-nog">EC-NOG (A330)</option>
+      <!-- more aircraft will be added here -->
+    </select>
 
     <!-- Add Load -->
     <button id="addLoadBtn" class="add-load-btn">+ Add Load</button>
@@ -42,117 +49,17 @@
   <main class="cargo-area">
 
     <header class="header">
-      <h1>Visual LIR - A330 Cargo Deck</h1>
-      <p class="subtitle">Dark mode · Real AKE/PAG widths · Real blocking zones</p>
+      <h1 id="aircraftTitle">Cargo Deck - EC-NOG (A330)</h1>
+      <p class="subtitle">Dynamic Layout · Real AKE/PAG widths · Blocking logic</p>
     </header>
 
-
-    <!-- ================================== -->
-    <!--            FORWARD HOLD            -->
-    <!-- ================================== -->
-    <section class="hold-section">
-      <h2>FORWARD HOLD</h2>
-
-      <div class="legend">
-        <span class="legend-item">
-          <span class="legend-box container"></span> Containers (AKE)
-        </span>
-        <span class="legend-item">
-          <span class="legend-box pallet"></span> Pallets (PAG/PMC/PAJ)
-        </span>
-        <span class="legend-item">
-          <span class="legend-box disabled"></span> Blocked
-        </span>
-      </div>
-
-      <div class="deck-grid">
-
-        <!-- AKE Row L -->
-        <div class="ake-row">
-          <div class="slot ake" data-pos="26L"></div>
-          <div class="slot ake" data-pos="25L"></div>
-          <div class="slot ake" data-pos="24L"></div>
-          <div class="slot ake" data-pos="23L"></div>
-          <div class="slot ake" data-pos="22L"></div>
-          <div class="slot ake" data-pos="21L"></div>
-          <div class="slot ake" data-pos="13L"></div>
-          <div class="slot ake" data-pos="12L"></div>
-          <div class="slot ake" data-pos="11L"></div>
-        </div>
-
-        <!-- AKE Row R -->
-        <div class="ake-row">
-          <div class="slot ake" data-pos="26R"></div>
-          <div class="slot ake" data-pos="25R"></div>
-          <div class="slot ake" data-pos="24R"></div>
-          <div class="slot ake" data-pos="23R"></div>
-          <div class="slot ake" data-pos="22R"></div>
-          <div class="slot ake" data-pos="21R"></div>
-          <div class="slot ake" data-pos="13R"></div>
-          <div class="slot ake" data-pos="12R"></div>
-          <div class="slot ake" data-pos="11R"></div>
-        </div>
-
-        <!-- Forward Pallets -->
-        <div class="pallet-row">
-          <div class="slot pallet" data-pos="24P"></div>
-          <div class="slot pallet" data-pos="23P"></div>
-          <div class="slot pallet" data-pos="22P"></div>
-          <div class="slot pallet" data-pos="21P"></div>
-          <div class="slot pallet" data-pos="12P"></div>
-          <div class="slot pallet" data-pos="11P"></div>
-        </div>
-
-      </div><!-- /deck-grid -->
-    </section>
-
-
-    <!-- ================================== -->
-    <!--              AFT HOLD              -->
-    <!-- ================================== -->
-    <section class="hold-section">
-      <h2>AFT HOLD</h2>
-
-      <div class="deck-grid aft-grid">
-
-        <!-- AKE Row L -->
-        <div class="ake-row">
-          <div class="slot ake" data-pos="43L"></div>
-          <div class="slot ake" data-pos="42L"></div>
-          <div class="slot ake" data-pos="41L"></div>
-          <div class="slot ake" data-pos="34L"></div>
-          <div class="slot ake" data-pos="33L"></div>
-          <div class="slot ake" data-pos="32L"></div>
-          <div class="slot ake" data-pos="31L"></div>
-        </div>
-
-        <!-- AKE Row R -->
-        <div class="ake-row">
-          <div class="slot ake" data-pos="43R"></div>
-          <div class="slot ake" data-pos="42R"></div>
-          <div class="slot ake" data-pos="41R"></div>
-          <div class="slot ake" data-pos="34R"></div>
-          <div class="slot ake" data-pos="33R"></div>
-          <div class="slot ake" data-pos="32R"></div>
-          <div class="slot ake" data-pos="31R"></div>
-        </div>
-
-        <!-- Aft Pallets -->
-        <div class="pallet-row">
-          <div class="slot pallet" data-pos="42P"></div>
-          <div class="slot pallet" data-pos="41P"></div>
-          <div class="slot pallet" data-pos="33P"></div>
-          <div class="slot pallet" data-pos="32P"></div>
-          <div class="slot pallet" data-pos="31P"></div>
-        </div>
-
-      </div><!-- /aft-grid -->
-    </section>
+    <!-- Dynamic deck will be injected here -->
+    <div id="deckContainer"></div>
 
   </main>
 
 </div><!-- /app-container -->
 
-<script src="script.js"></script>
+<script type="module" src="script.js"></script>
 </body>
 </html>

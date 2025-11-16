@@ -2,52 +2,23 @@
    GLOBAL DATA STORAGE
 ========================================================== */
 
+import { EC_NOG } from "./ec-nog.js";
+
 let loads = [];
 let loadCounter = 1;
 let draggingULD = null;     // for drag & drop reference
 
 
 /* ==========================================================
-   POSITION GROUPS (AKE vs P)
+   LOAD AIRCRAFT CONFIG (EC-NOG)
 ========================================================== */
 
-const containerPositions = [
-  "26L","25L","24L","23L","22L","21L","13L","12L","11L",
-  "26R","25R","24R","23R","22R","21R","13R","12R","11R",
-  "43L","42L","41L","34L","33L","32L","31L",
-  "43R","42R","41R","34R","33R","32R","31R"
-];
-
-const palletPositions = [
-  "24P","23P","22P","21P","12P","11P",
-  "42P","41P","33P","32P","31P"
-];
-
-
-/* ==========================================================
-   BLOCKING LOGIC
-========================================================== */
-
-const palletBlocks = {
-  // Forward
-  "24P": ["26L","26R","25L","25R"],
-  "23P": ["25L","25R","24L","24R"],
-  "22P": ["23L","23R","22L","22R"],
-  "21P": ["22L","22R","21L","21R"],
-  "12P": ["13L","13R","12L","12R"],
-  "11P": ["12L","12R","11L","11R"],
-
-  // Aft
-  "42P": ["43L","43R","42L","42R"],
-  "41P": ["42L","42R","41L","41R"],
-  "33P": ["34L","34R","33L","33R"],
-  "32P": ["33L","33R","32L","32R"],
-  "31P": ["31L","31R"]
-};
+const containerPositions = EC_NOG.containerPositions;
+const palletPositions = EC_NOG.palletPositions;
+const palletBlocks = EC_NOG.palletBlocks;
 
 // Reverse mapping: container -> pallets blocking it
 const containerBlocks = {};
-
 for (const [p, contList] of Object.entries(palletBlocks)) {
   contList.forEach(c => {
     if (!containerBlocks[c]) containerBlocks[c] = [];

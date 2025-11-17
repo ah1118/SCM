@@ -11,58 +11,33 @@
 
 <div class="app-container">
 
-  <!-- ============================ -->
-  <!--      LEFT SIDEBAR           -->
-  <!-- ============================ -->
+  <!-- LEFT SIDEBAR -->
   <aside class="sidebar">
-
     <h2>Load Builder</h2>
 
     <label>Select Aircraft:</label>
     <select id="aircraftSelect">
-      <option value="ECNOG">EC-NOG (A330)</option>
+      <option value="EC-NOG">EC-NOG (A330)</option>
     </select>
 
-    <!-- Add Load -->
     <button id="addLoadBtn" class="add-load-btn">+ Add Load</button>
 
-    <!-- Dynamic Load List -->
     <div id="loadList" class="load-list"></div>
-
   </aside>
 
 
-  <!-- ============================ -->
-  <!--       RIGHT CARGO AREA      -->
-  <!-- ============================ -->
+  <!-- RIGHT CARGO AREA -->
   <main class="cargo-area">
 
     <header class="header">
       <h1>Cargo Deck - EC-NOG (A330)</h1>
-      <p class="subtitle">Dynamic Layout • Real AKE/PAG widths • Blocking logic</p>
+      <p class="subtitle">Dynamic Layout · Real AKE/PAG widths · Blocking logic</p>
     </header>
 
-    <!-- ================================== -->
-    <!--            FORWARD HOLD            -->
-    <!-- ================================== -->
-    <section class="hold-section">
-      <h2>FORWARD HOLD</h2>
+    <!-- IMPORTANT: DECK GOES HERE -->
+    <div id="deckContainer"></div>
 
-      <div class="deck-grid" id="forwardHold"></div>
-    </section>
-
-    <!-- ================================== -->
-    <!--              AFT HOLD              -->
-    <!-- ================================== -->
-    <section class="hold-section">
-      <h2>AFT HOLD</h2>
-
-      <div class="deck-grid aft-grid" id="aftHold"></div>
-    </section>
-
-    <!-- ================================== -->
-    <!--   BLACK BAR FOR BUTTONS (NEW)     -->
-    <!-- ================================== -->
+    <!-- BLACK BAR UNDER AFT HOLD -->
     <div class="cargo-buttons-bar">
       <button id="export-btn">Export Layout</button>
       <button id="clear-btn" class="danger">Clear All</button>
@@ -72,18 +47,15 @@
 
 </div>
 
-<!-- ========================== -->
-<!--      EXPORT POPUP         -->
-<!-- ========================== -->
+<!-- EXPORT MODAL -->
 <div id="exportModal" class="modal hidden">
   <div class="modal-content">
-    <h3>Export Output</h3>
-    <textarea id="export-output" readonly></textarea>
+    <h3>Exported Layout</h3>
+    <textarea id="export-output"></textarea>
     <button id="closeModal">Close</button>
   </div>
 </div>
 
-<script src="ec-nog.js"></script>
-<script src="script.js"></script>
+<script type="module" src="script.js"></script>
 </body>
 </html>

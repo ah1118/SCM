@@ -342,9 +342,31 @@ function makeULDdraggable(box) {
         e.preventDefault();
 
         draggingULD = box;
+
+        const oldPos = box.dataset.position;
+
+        /* ----------------------------------------------
+           🔥 HARD FIX for flicker:
+           Remove from slot BEFORE any DOM movement
+        ---------------------------------------------- */
+        const oldSlot = document.querySelector(`.slot[data-pos="${oldPos}"]`);
+        if (oldSlot && oldSlot.contains(box)) {
+            oldSlot.removeChild(box);
+            oldSlot.classList.remove("has-uld");
+        }
+
+        /* ----------------------------------------------
+           Now add to BODY BEFORE positioning
+        ---------------------------------------------- */
+        document.body.appendChild(box);
+
         box.classList.add("dragging");
 
-        document.body.appendChild(box);
+        // Start exactly at cursor immediately
+        box.style.position = "fixed";
+        box.style.left = e.clientX + "px";
+        box.style.top = e.clientY + "px";
+        box.style.transform = "translate(-50%, -50%)";
 
         highlightSlots(box.dataset.uldType);
 
@@ -353,10 +375,8 @@ function makeULDdraggable(box) {
     });
 
     function dragMove(e) {
-        draggingULD.style.position = "fixed";
         draggingULD.style.left = e.clientX + "px";
         draggingULD.style.top = e.clientY + "px";
-        draggingULD.style.transform = "translate(-50%, -50%)";
     }
 
     function dragEnd(e) {
@@ -373,9 +393,9 @@ function makeULDdraggable(box) {
             const cx = r.left + r.width/2;
             const cy = r.top + r.height/2;
 
-            const dist = Math.hypot(e.clientX - cx, e.clientY - cy);
-            if (dist < bestDist) {
-                bestDist = dist;
+            const d = Math.hypot(e.clientX - cx, e.clientY - cy);
+            if (d < bestDist) {
+                bestDist = d;
                 best = slot;
             }
         });
@@ -389,26 +409,19 @@ function makeULDdraggable(box) {
             moveULD(draggingULD, best);
         }
 
-        resetDrag();
-    }
-
-    function resetDrag() {
-        if (!draggingULD) return;
+        draggingULD.classList.remove("dragging");
 
         draggingULD.style.position = "";
         draggingULD.style.left = "";
         draggingULD.style.top = "";
         draggingULD.style.transform = "";
 
-        draggingULD.classList.remove("dragging");
-
         draggingULD = null;
+
         clearHighlights();
         updateCargoDeck();
     }
 }
-
-
 
 /* ==========================================================
    SLOT TYPE VALIDATION

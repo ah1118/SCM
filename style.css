@@ -34,7 +34,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  overflow: visible;
 }
 
 .sidebar h2 {
@@ -66,41 +65,42 @@ body {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  align-items: stretch;   /* FIX: no more centering */
+  align-items: stretch;   /* FULL WIDTH FIX */
 }
 
 /* =========================
-   LOAD ROW
+   LOAD ROW — FIXED VERSION
 ========================= */
 .load-row {
   background: rgba(25, 35, 60, 0.85);
   border: 1px solid rgba(70, 90, 120, 0.35);
   border-radius: 12px;
-  display: flex;          /* FIX: full flex container */
+  display: flex;               /* FLEX FIX */
   align-items: center;
   gap: 10px;
-  padding: 14px 16px;     /* Taller box */
-  width: 100%;            /* FIX: full sidebar width */
-  min-height: 56px;       /* Taller */
-  height: auto;
+  padding: 14px 16px;
+  width: 100%;                 /* FULL WIDTH */
+  min-height: 56px;
 }
 
-/* Input + Select inside row */
+/* Inside controls auto-stretch */
 .load-row select,
 .load-row input {
   background: #0f172a;
   color: #e2e8f0;
   border: 1px solid #475569;
   border-radius: 8px;
-  padding: 10px 12px;      /* Taller controls */
+  padding: 10px 12px;
   font-size: 13px;
-  height: auto;
+
+  flex: 1;          /* AUTO EXPAND INSIDE ROW */
+  min-width: 0;     /* PREVENT OVERFLOW */
 }
 
-.load-row select { width: 80px; }
-.load-row input  { width: 120px; }
-.load-row select.load-bulk { width: 70px; }
-.load-row select.load-pos  { width: 90px; }
+/* Small fixed-width dropdowns */
+.load-row select.load-type { flex: 0 0 90px; }
+.load-row select.load-bulk { flex: 0 0 70px; }
+.load-row select.load-pos  { flex: 0 0 90px; }
 
 /* Delete button */
 .delete-load {

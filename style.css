@@ -2,24 +2,28 @@
    GLOBAL LAYOUT
 ========================= */
 
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   padding: 0;
   background: #050509;
   color: #ecf0f1;
-  font-family: system-ui, "Segoe UI", sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   display: flex;
   justify-content: center;
 }
 
 .app-container {
   display: flex;
-  flex-direction: row;
   width: 100%;
-  max-width: 1700px;
+  max-width: 1600px;
   padding: 20px;
   gap: 20px;
 }
+
 
 
 /* =========================
@@ -27,50 +31,54 @@ body {
 ========================= */
 
 .sidebar {
-  width: 370px;
-  background: rgba(10, 18, 35, 0.85);
-  border-radius: 16px;
-  padding: 20px;
+  width: 330px;
+  background: rgba(10, 18, 35, 0.82);
+  border-radius: 14px;
+  padding: 18px;
   border: 1px solid rgba(80, 100, 130, 0.45);
-  box-shadow: 0 0 20px rgba(0,0,0,0.45) inset;
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.45);
 
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 14px;
 
-  max-height: 95vh;
-  overflow-y: auto;
+  /* FIX: No clipping of load rows */
+  overflow: visible;
 }
 
-.sidebar label {
-  font-size: 13px;
+.sidebar h2 {
+  margin: 0 0 5px;
+  font-size: 18px;
   color: #d1d5db;
 }
 
-.aircraft-fixed {
-  background: #0f172a;
-  border: 1px solid #475569;
-  padding: 10px;
-  border-radius: 8px;
-  font-size: 14px;
-  color: #e2e8f0;
-}
+
+
+/* =========================
+   ADD LOAD BUTTON
+========================= */
 
 .add-load-btn {
   width: 100%;
-  padding: 12px;
+  padding: 10px;
   background: #0ea5e9;
-  border: none;
+  color: white;
   border-radius: 8px;
-  color: #fff;
+  border: none;
   cursor: pointer;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 14px;
 }
 
 .add-load-btn:hover {
   background: #38bdf8;
 }
+
+
+
+/* =========================
+   ULD LIST
+========================= */
 
 .load-list {
   display: flex;
@@ -79,147 +87,135 @@ body {
 }
 
 
+
 /* =========================
    LOAD ROW (FIXED)
 ========================= */
 
 .load-row {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-
-  gap: 12px;
-
   background: rgba(25, 35, 60, 0.85);
-  padding: 12px 16px;
-  border-radius: 12px;
   border: 1px solid rgba(70, 90, 120, 0.35);
+  border-radius: 12px;
 
-  box-sizing: border-box;
-  overflow: visible;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+
+  padding: 12px 16px;
+
+  /* FIX: Make it expand & center */
+  width: calc(100% - 12px);
+  margin-left: auto;
+  margin-right: auto;
 }
-
-/* SELECTS & INPUTS */
 
 .load-row select,
 .load-row input {
   background: #0f172a;
-  border: 1px solid #475569;
   color: #e2e8f0;
+  border: 1px solid #475569;
+  border-radius: 8px;
   padding: 6px 8px;
   font-size: 13px;
-  border-radius: 6px;
   height: 32px;
-
-  flex-shrink: 0;
 }
 
-/* AKE / PAG / etc dropdown */
-.load-row .load-type {
-  width: 85px;
+.load-row select {
+  width: 80px;
 }
 
-/* ULD ID (EXPANDS) */
-.load-row .load-uldid {
-  flex: 1;
-  min-width: 150px;
+.load-row input {
+  width: 120px;
 }
 
-/* Bulk BY / FKT */
-.load-row .load-bulk {
+/* Bulk (BY/FKT) smaller */
+.load-row select.load-bulk {
   width: 70px;
 }
 
-/* POS */
-.load-row .load-pos {
+.load-row select.load-pos {
   width: 90px;
 }
 
-/* Delete Button */
+/* Delete button */
 .delete-load {
   background: #ef4444;
-  border: none;
-  width: 38px;
-  height: 32px;
-  border-radius: 6px;
   color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 8px;
   cursor: pointer;
-  font-weight: 600;
   font-size: 14px;
-  flex-shrink: 0;
+  font-weight: 600;
 }
 
-.delete-load:hover {
-  background: #dc2626;
-}
 
 
 /* =========================
-   RIGHT PANEL
+   CARGO AREA (RIGHT SIDE)
 ========================= */
 
 .cargo-area {
   flex: 1;
   background: radial-gradient(circle at top, #111827 0%, #020617 75%);
-  padding: 20px 30px;
+  padding: 20px;
   border-radius: 16px;
   border: 1px solid rgba(148, 163, 184, 0.25);
   box-shadow: 0 0 30px rgba(0,0,0,0.55);
+  position: relative;
 }
 
-.header {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.header h1 {
+.cargo-area h1 {
   margin: 0;
-  font-size: 26px;
-  font-weight: 700;
+  font-size: 24px;
 }
 
 .subtitle {
   color: #9ca3af;
-  font-size: 14px;
-  margin-top: 4px;
+  font-size: 13px;
 }
+
+
 
 /* =========================
    HOLD SECTIONS
 ========================= */
 
 .hold-section {
-  margin-top: 30px;
-  padding: 20px;
-  background: rgba(10, 19, 38, 0.92);
+  margin-top: 28px;
+  padding: 18px;
+  background: rgba(10, 19, 38, 0.9);
   border-radius: 14px;
   border: 1px solid rgba(75, 85, 99, 0.6);
 }
 
 .hold-section h2 {
-  margin: 0 0 12px;
+  margin: 0 0 10px;
   color: #fff;
-  font-size: 17px;
-  font-weight: 600;
 }
 
-/* SLOT GRID */
+
+
+/* =========================
+   SLOT GRID
+========================= */
+
 .deck-grid {
-  width: 900px;
+  width: 750px;
   margin: 0 auto;
 }
 
 .aft-grid {
-  width: 750px;
+  width: 620px;
 }
 
 .ake-row,
 .pallet-row {
   display: flex;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
+
 
 
 /* =========================
@@ -227,18 +223,18 @@ body {
 ========================= */
 
 .slot {
-  height: 50px;
+  height: 48px;
   border-radius: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
-  position: relative;
-
   color: #dbe2f0;
+  position: relative;
   font-size: 13px;
-  transition: 0.15s ease-out;
+  transition: 0.12s ease-out;
 }
 
+/* Label */
 .slot::before {
   content: attr(data-pos);
   position: absolute;
@@ -247,88 +243,88 @@ body {
   color: #8ea0c5;
 }
 
+/* AKE */
 .slot.ake {
-  width: 80px;
+  width: 70px;
   background: #112037;
-  border: 1px solid rgba(0, 180, 255, 0.45);
+  border: 1px solid #2196f3;
 }
 
+/* PALLET */
 .slot.pallet {
-  width: 120px;
+  width: 110px;
   background: #0f172a;
-  border: 1px solid rgba(200, 160, 120, 0.45);
+  border: 1px solid #b48c64;
 }
 
+/* When filled */
 .slot.has-uld {
-  background: rgba(34, 197, 94, 0.15);
   border-color: #22c55e;
   box-shadow: 0 0 10px rgba(34,197,94,0.45);
 }
 
+/* Disabled */
 .slot.disabled {
-  opacity: .28;
-  pointer-events: none;
+  opacity: 0.25;
 }
 
 
+
 /* =========================
-   ULD BOX
+   ULD BOXES
 ========================= */
 
 .uld-box {
-  background: #1e293b;
-  padding: 6px 10px;
+  background: linear-gradient(to bottom right, #1e293b, #0f172a);
+  padding: 5px 8px;
   border-radius: 6px;
-  color: #f1f5f9;
-  font-size: 13px;
   border: 1px solid #475569;
+  color: #f1f5f9;
+  font-size: 12px;
   cursor: grab;
   user-select: none;
+  white-space: nowrap;
 }
 
 .uld-box.dragging {
-  opacity: .9;
+  opacity: 0.9;
   cursor: grabbing;
-  transform: scale(1.12);
+  z-index: 9999;
+  transform: scale(1.1);
 }
 
 
+
 /* =========================
-   BOTTOM BUTTONS BAR
+   BUTTON BAR
 ========================= */
 
 .cargo-buttons-bar {
   width: 100%;
-  margin-top: 25px;
+  margin-top: 20px;
   background: rgba(5,5,10,0.92);
-  padding: 18px;
-  border-radius: 12px;
+  padding: 15px;
+  border-radius: 10px;
   border: 1px solid #334155;
-
   display: flex;
   justify-content: center;
   gap: 20px;
 }
 
 .cargo-buttons-bar button {
-  padding: 10px 22px;
+  padding: 10px 20px;
   background: #111827;
   border: 1px solid #475569;
   border-radius: 8px;
-  color: #e5e7eb;
   cursor: pointer;
-  font-size: 15px;
+  color: #e5e7eb;
   font-weight: 600;
-}
-
-.cargo-buttons-bar button:hover {
-  background: #1e293b;
 }
 
 .cargo-buttons-bar .danger {
   border-color: #ef4444;
-  color: #ef4444;
 }
+
 
 
 /* =========================
@@ -351,8 +347,8 @@ body {
 
 .modal-content {
   background: #0f172a;
-  padding: 25px;
-  border-radius: 14px;
+  padding: 20px;
+  border-radius: 12px;
   width: 420px;
   border: 1px solid #334155;
   text-align: center;
@@ -360,12 +356,11 @@ body {
 
 #export-output {
   width: 100%;
-  height: 160px;
+  height: 150px;
   background: #020617;
   border: 1px solid #475569;
   border-radius: 8px;
   padding: 10px;
   color: #e2e8f0;
-  font-size: 13px;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }

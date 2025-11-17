@@ -297,63 +297,77 @@ function exportLayout() {
 }
 
 /* ==========================================================
-   DRAG & DROP
+   NEW DRAG & DROP (accurate mouse tracking + boundaries)
 ========================================================== */
+
 function makeULDdraggable(box) {
+
   let offsetX = 0;
   let offsetY = 0;
 
+  const cargoArea = document.querySelector(".cargo-area");
+
   box.addEventListener("mousedown", e => {
     draggingULD = box;
+    draggingULD.classList.add("dragging");
 
-    const r = box.getBoundingClientRect();
-    offsetX = e.clientX - r.left;
-    offsetY = e.clientY - r.top;
+    const rect = draggingULD.getBoundingClientRect();
 
-    box.classList.add("dragging");
-    highlightSlots(box.dataset.uldType);
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
 
     document.addEventListener("mousemove", dragMove);
     document.addEventListener("mouseup", dragEnd);
+
+    highlightSlots(box.dataset.uldType);
   });
 
   function dragMove(e) {
-    const cargo = document.querySelector(".cargo-area");
-    const crect = cargo.getBoundingClientRect();
+    if (!draggingULD) return;
+
+    const areaRect = cargoArea.getBoundingClientRect();
+
+    let x = e.clientX - areaRect.left - offsetX;
+    let y = e.clientY - areaRect.top - offsetY;
+
+    // Keep dragging inside aircraft area
+    x = Math.max(0, Math.min(x, areaRect.width - draggingULD.offsetWidth));
+    y = Math.max(0, Math.min(y, areaRect.height - draggingULD.offsetHeight));
 
     draggingULD.style.position = "absolute";
-    draggingULD.style.left = (e.clientX - crect.left - offsetX) + "px";
-    draggingULD.style.top  = (e.clientY - crect.top  - offsetY) + "px";
+    draggingULD.style.left = x + "px";
+    draggingULD.style.top = y + "px";
   }
 
   function dragEnd(e) {
+
     document.removeEventListener("mousemove", dragMove);
     document.removeEventListener("mouseup", dragEnd);
 
-    const target = document.elementFromPoint(e.clientX, e.clientY)?.closest(".slot");
+    if (!draggingULD) return;
 
-    if (!target) return resetDrag();
+    const targetSlot = document.elementFromPoint(e.clientX, e.clientY)?.closest(".slot");
 
-    const newPos = target.dataset.pos;
-    const uType  = draggingULD.dataset.uldType;
+    if (targetSlot) {
+      const newPos = targetSlot.dataset.pos;
+      const uldType = draggingULD.dataset.uldType;
 
-    if (!isValidSlotType(uType, newPos)) return resetDrag();
-    if (target.classList.contains("has-uld")) return resetDrag();
-    if (isBlocked(newPos, loads.map(l => l.position))) return resetDrag();
+      if (
+        isValidSlotType(uldType, newPos) &&
+        !targetSlot.classList.contains("has-uld") &&
+        !isBlocked(newPos, loads.map(l => l.position))
+      ) {
+        moveULD(draggingULD, targetSlot);
+      }
+    }
 
-    moveULD(draggingULD, target);
     draggingULD.classList.remove("dragging");
-    draggingULD = null;
-    clearHighlights();
-  }
-
-  function resetDrag() {
     draggingULD.style.position = "relative";
     draggingULD.style.left = "0";
-    draggingULD.style.top  = "0";
-    draggingULD.classList.remove("dragging");
-    clearHighlights();
+    draggingULD.style.top = "0";
+
     draggingULD = null;
+    clearHighlights();
   }
 }
 

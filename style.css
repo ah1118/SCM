@@ -10,7 +10,6 @@ body {
   background: #050509;
   color: #ecf0f1;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-
   display: flex;
   justify-content: center;
 }
@@ -94,7 +93,7 @@ body {
   border: 1px solid rgba(70, 90, 120, 0.35);
   border-radius: 12px;
 
-  display: inline-flex;          /* VERY IMPORTANT */
+  display: inline-flex;          /* KEY → exact width */
   align-items: center;
   gap: 10px;
 
@@ -120,7 +119,6 @@ body {
 .load-row select.load-bulk { width: 70px; }
 .load-row select.load-pos  { width: 90px; }
 
-/* Delete button */
 .delete-load {
   background: #ef4444;
   color: white;
@@ -147,8 +145,15 @@ body {
   box-shadow: 0 0 30px rgba(0,0,0,0.55);
 }
 
-.cargo-area h1 { margin: 0; font-size: 24px; }
-.subtitle { color: #9ca3af; font-size: 13px; }
+.cargo-area h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.subtitle {
+  color: #9ca3af;
+  font-size: 13px;
+}
 
 
 
@@ -161,4 +166,172 @@ body {
   padding: 18px;
   background: rgba(10, 19, 38, 0.9);
   border-radius: 14px;
-  border: 1px solid rgba(75, 85, 9
+  border: 1px solid rgba(75, 85, 99, 0.6);
+}
+
+.hold-section h2 {
+  margin: 0 0 10px;
+  color: #fff;
+}
+
+
+
+/* =========================
+   SLOT GRID
+========================= */
+
+.deck-grid {
+  width: 750px;
+  margin: 0 auto;
+}
+
+.aft-grid {
+  width: 620px;
+}
+
+.ake-row,
+.pallet-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+
+
+/* =========================
+   SLOTS
+========================= */
+
+.slot {
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #dbe2f0;
+  position: relative;
+  font-size: 13px;
+  transition: 0.12s ease-out;
+}
+
+.slot::before {
+  content: attr(data-pos);
+  position: absolute;
+  top: -14px;
+  font-size: 10px;
+  color: #8ea0c5;
+}
+
+.slot.ake {
+  width: 70px;
+  background: #112037;
+  border: 1px solid #2196f3;
+}
+
+.slot.pallet {
+  width: 110px;
+  background: #0f172a;
+  border: 1px solid #b48c64;
+}
+
+.slot.has-uld {
+  border-color: #22c55e;
+  box-shadow: 0 0 10px rgba(34,197,94,0.45);
+}
+
+.slot.disabled { opacity: 0.25; }
+
+
+
+/* =========================
+   ULD BOXES
+========================= */
+
+.uld-box {
+  background: linear-gradient(to bottom right, #1e293b, #0f172a);
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid #475569;
+  color: #f1f5f9;
+  font-size: 12px;
+  cursor: grab;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.uld-box.dragging {
+  opacity: 0.9;
+  cursor: grabbing;
+  z-index: 9999;
+  transform: scale(1.1);
+}
+
+
+
+/* =========================
+   BUTTON BAR
+========================= */
+
+.cargo-buttons-bar {
+  width: 100%;
+  margin-top: 20px;
+  background: rgba(5,5,10,0.92);
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #334155;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.cargo-buttons-bar button {
+  padding: 10px 20px;
+  background: #111827;
+  border: 1px solid #475569;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #e5e7eb;
+  font-weight: 600;
+}
+
+.cargo-buttons-bar .danger {
+  border-color: #ef4444;
+}
+
+
+
+/* =========================
+   EXPORT MODAL
+========================= */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5000;
+}
+
+.modal.hidden { display: none; }
+
+.modal-content {
+  background: #0f172a;
+  padding: 20px;
+  border-radius: 12px;
+  width: 420px;
+  border: 1px solid #334155;
+  text-align: center;
+}
+
+#export-output {
+  width: 100%;
+  height: 150px;
+  background: #020617;
+  border: 1px solid #475569;
+  border-radius: 8px;
+  padding: 10px;
+  color: #e2e8f0;
+  margin-bottom: 12px;
+}

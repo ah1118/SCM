@@ -59,31 +59,24 @@ body {
 }
 .add-load-btn:hover { background: #38bdf8; }
 
-/* =========================
-   ULD LIST
-========================= */
 .load-list {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  align-items: center;
+  align-items: stretch;    /* <- not center */
 }
 
-/* =========================
-   LOAD ROW (auto-height)
-========================= */
 .load-row {
   background: rgba(25, 35, 60, 0.85);
   border: 1px solid rgba(70, 90, 120, 0.35);
   border-radius: 12px;
-  display: inline-flex;
+  display: flex;           /* <- not inline-flex */
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  width: max-content;
-  max-width: 100%;
-  min-height: 48px;   /* keeps nice rhythm when closed */
-  height: auto;       /* let it grow if dropdown opens downward */
+  width: 100%;             /* <- fill sidebar */
+  min-height: 48px;
+  height: auto;
 }
 
 .load-row select,

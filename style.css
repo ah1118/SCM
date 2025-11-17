@@ -1,7 +1,6 @@
 /* =========================
    GLOBAL LAYOUT
 ========================= */
-
 * { box-sizing: border-box; }
 
 body {
@@ -25,7 +24,6 @@ body {
 /* =========================
    LEFT SIDEBAR
 ========================= */
-
 .sidebar {
   width: 330px;
   background: rgba(10, 18, 35, 0.82);
@@ -48,7 +46,6 @@ body {
 /* =========================
    ADD LOAD BUTTON
 ========================= */
-
 .add-load-btn {
   width: 100%;
   padding: 10px;
@@ -60,13 +57,11 @@ body {
   font-weight: 600;
   font-size: 14px;
 }
-
 .add-load-btn:hover { background: #38bdf8; }
 
 /* =========================
    ULD LIST
 ========================= */
-
 .load-list {
   display: flex;
   flex-direction: column;
@@ -75,9 +70,8 @@ body {
 }
 
 /* =========================
-   TIGHT LOAD ROW (perfect fit)
+   LOAD ROW (auto-height)
 ========================= */
-
 .load-row {
   background: rgba(25, 35, 60, 0.85);
   border: 1px solid rgba(70, 90, 120, 0.35);
@@ -88,6 +82,8 @@ body {
   padding: 10px 12px;
   width: max-content;
   max-width: 100%;
+  min-height: 48px;   /* keeps nice rhythm when closed */
+  height: auto;       /* let it grow if dropdown opens downward */
 }
 
 .load-row select,
@@ -96,9 +92,9 @@ body {
   color: #e2e8f0;
   border: 1px solid #475569;
   border-radius: 8px;
-  padding: 6px 8px;
+  padding: 8px 10px;  /* taller click area */
   font-size: 13px;
-  height: 32px;
+  height: auto;       /* remove 32px lock */
 }
 
 .load-row select { width: 80px; }
@@ -110,7 +106,7 @@ body {
   background: #ef4444;
   color: white;
   border: none;
-  padding: 6px 14px;
+  padding: 8px 14px;
   border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
@@ -120,7 +116,6 @@ body {
 /* =========================
    CARGO AREA
 ========================= */
-
 .cargo-area {
   flex: 1;
   background: radial-gradient(circle at top, #111827 0%, #020617 75%);
@@ -143,7 +138,6 @@ body {
 /* =========================
    HOLD SECTIONS
 ========================= */
-
 .hold-section {
   margin-top: 28px;
   padding: 18px;
@@ -160,7 +154,6 @@ body {
 /* =========================
    SLOT GRID
 ========================= */
-
 .deck-grid {
   width: 750px;
   margin: 0 auto;
@@ -180,7 +173,6 @@ body {
 /* =========================
    SLOTS
 ========================= */
-
 .slot {
   height: 48px;
   border-radius: 10px;
@@ -223,7 +215,6 @@ body {
 /* =========================
    ULD BOXES
 ========================= */
-
 .uld-box {
   background: linear-gradient(to bottom right, #1e293b, #0f172a);
   padding: 5px 8px;
@@ -246,7 +237,6 @@ body {
 /* =========================
    BUTTON BAR
 ========================= */
-
 .cargo-buttons-bar {
   width: 100%;
   margin-top: 20px;
@@ -276,7 +266,6 @@ body {
 /* =========================
    EXPORT MODAL
 ========================= */
-
 .modal {
   position: fixed;
   inset: 0;

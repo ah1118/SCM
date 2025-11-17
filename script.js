@@ -185,6 +185,12 @@ function addLoadRow() {
 
         <input type="text" class="load-uldid" placeholder="ULD">
 
+        <!-- NEW FIELD -->
+        <select class="load-bulk">
+            <option value="BY" selected>BY</option>
+            <option value="FKT">FKT</option>
+        </select>
+
         <select class="load-pos"></select>
 
         <button class="delete-load">X</button>
@@ -196,15 +202,40 @@ function addLoadRow() {
 
     row.querySelector(".load-type").addEventListener("change", onTypeChanged);
     row.querySelector(".load-uldid").addEventListener("input", onLoadEdited);
+    row.querySelector(".load-bulk").addEventListener("change", onLoadEdited); // NEW
     row.querySelector(".load-pos").addEventListener("change", onLoadEdited);
 
     row.querySelector(".delete-load").addEventListener("click", () =>
         deleteLoad(row.dataset.loadid)
     );
 
-    loads.push({ id: loadCounter, type: "AKE", uldid: "", position: "" });
+    loads.push({ 
+        id: loadCounter, 
+        type: "AKE", 
+        uldid: "", 
+        bulk: "BY",       // NEW
+        position: "" 
+    });
 
     loadCounter++;
+}
+
+function onLoadEdited(e) {
+    const row = e.target.closest(".load-row");
+    const load = loads.find(l => l.id == row.dataset.loadid);
+
+    load.type = row.querySelector(".load-type").value;
+    load.uldid = row.querySelector(".load-uldid").value.toUpperCase().trim();
+    load.bulk = row.querySelector(".load-bulk").value;   // NEW
+    load.position = row.querySelector(".load-pos").value;
+
+    if (load.position && isPosBlocked(load)) {
+        alert(`Position ${load.position} is blocked.`);
+        row.querySelector(".load-pos").value = "";
+        load.position = "";
+    }
+
+    updateCargoDeck();
 }
 
 function onTypeChanged(e) {

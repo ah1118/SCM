@@ -59,7 +59,7 @@ body {
 .load-list {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 7px;
   width: 100%;
   flex-grow: 1;
 }

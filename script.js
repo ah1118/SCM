@@ -313,8 +313,6 @@ function disableSlot(pos) {
 
 function makeULDdraggable(box) {
 
-    let offsetX = 0, offsetY = 0;
-
     box.addEventListener("mousedown", e => {
 
         draggingULD = box;
@@ -323,56 +321,56 @@ function makeULDdraggable(box) {
         // Move to body so dragging is relative to viewport
         document.body.appendChild(box);
 
-        const rect = box.getBoundingClientRect();
-        offsetX = e.clientX - rect.left;
-        offsetY = e.clientY - rect.top;
-
         highlightSlots(box.dataset.uldType);
 
         document.addEventListener("mousemove", dragMove);
         document.addEventListener("mouseup", dragEnd);
     });
 
+    // === PERFECT CURSOR-FOLLOW SYSTEM ===
     function dragMove(e) {
-        draggingULD.style.position = "absolute";
-        draggingULD.style.left = (e.pageX - offsetX) + "px";
-        draggingULD.style.top = (e.pageY - offsetY) + "px";
+        const x = e.clientX;
+        const y = e.clientY;
+
+        draggingULD.style.position = "fixed";   
+        draggingULD.style.left = x + "px";
+        draggingULD.style.top = y + "px";
+
+        draggingULD.style.transform = "translate(-50%, -50%)";  
     }
 
     function dragEnd(e) {
-
         document.removeEventListener("mousemove", dragMove);
         document.removeEventListener("mouseup", dragEnd);
 
-        const targetSlot = document.elementFromPoint(e.clientX, e.clientY)?.closest(".slot");
+        // Try to drop into a slot
+        const dropTarget = document.elementFromPoint(e.clientX, e.clientY);
 
-        if (!targetSlot) return resetDrag();
+        if (dropTarget && dropTarget.classList.contains("slot") && 
+            dropTarget.classList.contains(draggingULD.dataset.uldType)) {
 
-        const newPos = targetSlot.dataset.pos;
-        const type = draggingULD.dataset.uldType;
+            dropTarget.innerHTML = "";
+            dropTarget.appendChild(draggingULD);
+        }
 
-        if (!isValidSlotType(type, newPos)) return resetDrag();
-        if (targetSlot.classList.contains("has-uld")) return resetDrag();
-        if (isBlocked(newPos, loads.map(l => l.position))) return resetDrag();
-
-        moveULD(draggingULD, targetSlot);
-
-        draggingULD.classList.remove("dragging");
-        draggingULD = null;
-        clearHighlights();
+        resetDrag();
     }
 
+    // === CLEAN RESET ===
     function resetDrag() {
+        if (!draggingULD) return;
+
         draggingULD.style.position = "relative";
         draggingULD.style.left = "0";
         draggingULD.style.top = "0";
+        draggingULD.style.transform = "none";
+
         draggingULD.classList.remove("dragging");
         clearHighlights();
+
         draggingULD = null;
     }
 }
-
-
 
 /* ==========================================================
    DRAG HELPERS

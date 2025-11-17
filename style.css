@@ -16,7 +16,7 @@ body {
   display: flex;
   flex-direction: row;
   width: 100%;
-  max-width: 1500px;
+  max-width: 1600px;
   padding: 20px;
   gap: 20px;
 }
@@ -26,15 +26,16 @@ body {
 ========================= */
 
 .sidebar {
-  width: 320px;
+  width: 310px;
   background: rgba(10, 18, 35, 0.82);
   border-radius: 14px;
   padding: 18px;
   border: 1px solid rgba(80, 100, 130, 0.45);
-  box-shadow: inset 0 0 20px rgba(0,0,0,0.45);
+  box-shadow: 0 0 20px rgba(0,0,0,0.45) inset;
+
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 14px;
 
   max-height: 95vh;
   overflow: hidden;
@@ -46,6 +47,19 @@ body {
   color: #d1d5db;
 }
 
+/* Compact dropdown */
+.sidebar select {
+  width: 100%;
+  height: 34px;
+  background: #0f172a;
+  border: 1px solid #475569;
+  color: #e2e8f0;
+  border-radius: 6px;
+  padding-left: 6px;
+  font-size: 13px;
+}
+
+/* Add Load */
 .add-load-btn {
   width: 100%;
   padding: 10px;
@@ -62,44 +76,30 @@ body {
   background: #38bdf8;
 }
 
+/* Scrollable ULD list */
 .load-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
 
-  max-height: 390px;
+  max-height: 380px;
   overflow-y: auto;
   padding-right: 6px;
 }
 
 /* =========================
-   ULTRA COMPACT LOAD ROW
+   LOAD ROW (COMPACT)
 ========================= */
 
 .load-row {
   display: flex;
+  gap: 6px;
   align-items: center;
-  gap: 4px;
   background: rgba(25, 35, 60, 0.65);
-  padding: 3px 6px;
+  padding: 6px 8px;
   border-radius: 6px;
   border: 1px solid rgba(70, 90, 120, 0.35);
-  height: 26px;
-}
-
-/* =========================
-   SMALL SELECT / INPUT
-========================= */
-
-/* Remove browser styling + add tiny arrow */
-.load-row select {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-
-  background-image: url("data:image/svg+xml,%3Csvg fill='%23cbd5e1' height='14' viewBox='0 0 20 20' width='14' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5.516 7.548l4.484 4.452 4.484-4.452c.26-.257.683-.253.94.007.256.26.252.684-.007.94l-4.931 4.892c-.003.003-.007.004-.01.007-.094.09-.216.146-.351.146s-.257-.056-.351-.146c-.003-.003-.007-.004-.01-.007L4.583 8.495c-.26-.256-.263-.68-.007-.94.257-.26.68-.264.94-.007z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 6px center;
+  height: 36px;
 }
 
 .load-row select,
@@ -108,68 +108,31 @@ body {
   color: #e2e8f0;
   border: 1px solid #475569;
   border-radius: 5px;
-  padding: 0px 4px !important;
-  font-size: 11.5px;
-  height: 20px !important;
-  line-height: 20px !important;
-}
-
-.load-row input {
-  width: 85px;
+  padding: 3px 5px;
+  font-size: 12px;
+  height: 24px;
 }
 
 .load-row select {
   width: 70px;
 }
 
-/* =========================
-   DELETE BUTTON (SMALL)
-========================= */
+.load-row input {
+  width: 85px;
+}
 
 .delete-load {
   background: #ef4444;
   color: white;
   border: none;
-  padding: 0px 6px !important;
-  border-radius: 4px;
+  padding: 2px 6px;
+  border-radius: 5px;
   cursor: pointer;
-  font-size: 10px;
-  height: 20px !important;
-  line-height: 18px;
+  font-size: 11px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.sidebar-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.sidebar-buttons button {
-  padding: 10px;
-  background: #111827;
-  border: 1px solid #475569;
-  border-radius: 8px;
-  cursor: pointer;
-  color: #e5e7eb;
-  font-size: 14px;
-}
-
-.sidebar-buttons .danger {
-  border-color: #ef4444;
-}
-
-#export-output {
-  width: 100%;
-  height: 120px;
-  background: #020617;
-  border-radius: 8px;
-  border: 1px solid #4b5563;
-  color: #e5e7eb;
-  padding: 10px;
-  resize: vertical;
 }
 
 /* =========================
@@ -220,7 +183,7 @@ body {
 }
 
 /* =========================
-   GRID WIDTHS
+   SLOT GRID
 ========================= */
 
 .deck-grid {
@@ -232,16 +195,16 @@ body {
   width: 620px;
 }
 
-/* =========================
-   SLOT BASE
-========================= */
-
 .ake-row,
 .pallet-row {
   display: flex;
   gap: 10px;
   margin-bottom: 10px;
 }
+
+/* =========================
+   SLOTS
+========================= */
 
 .slot {
   height: 48px;
@@ -252,9 +215,11 @@ body {
   color: #dbe2f0;
   position: relative;
   font-size: 13px;
-  transition: 0.12s;
+  cursor: default;
+  transition: 0.12s ease-out;
 }
 
+/* Label above slot */
 .slot::before {
   content: attr(data-pos);
   position: absolute;
@@ -263,34 +228,36 @@ body {
   color: #8ea0c5;
 }
 
-/* AKE */
+/* AKE slots */
 .slot.ake {
   width: 70px;
   background: #112037;
   border: 1px solid rgba(0, 180, 255, 0.45);
-  box-shadow: inset 0 0 6px rgba(0,200,255,0.12), 0 0 6px rgba(0,200,255,0.22);
+  box-shadow:
+    inset 0 0 6px rgba(0, 200, 255, 0.12),
+    0 0 6px rgba(0, 200, 255, 0.22);
 }
 
 .slot.ake.has-uld {
-  background: rgba(0,200,255,0.15);
+  background: rgba(0, 200, 255, 0.15);
   border-color: #22c55e;
-  box-shadow: 0 0 10px rgba(34,197,94,0.45);
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.45);
 }
 
-/* Pallet */
+/* Pallet slots */
 .slot.pallet {
   width: 110px;
   background: #0f172a;
-  border: 1px solid rgba(180,150,120,0.45);
+  border: 1px solid rgba(180, 150, 120, 0.45);
 }
 
 .slot.pallet.has-uld {
-  background: rgba(200,160,120,0.18);
+  background: rgba(200, 160, 120, 0.18);
   border-color: #22c55e;
-  box-shadow: 0 0 10px rgba(34,197,94,0.45);
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.45);
 }
 
-/* Disabled */
+/* Disabled (blocked) */
 .slot.disabled {
   opacity: 0.28;
   pointer-events: none;
@@ -298,7 +265,7 @@ body {
 }
 
 /* =========================
-   ULD DRAG
+   ULD BOX (DRAGGABLE)
 ========================= */
 
 .uld-box {
@@ -309,6 +276,7 @@ body {
   color: #f1f5f9;
   border: 1px solid #475569;
   cursor: grab;
+  transition: 0.1s ease;
   white-space: nowrap;
   user-select: none;
 }
@@ -317,21 +285,109 @@ body {
   opacity: 0.85;
   cursor: grabbing;
   z-index: 9999;
-  box-shadow: 0 0 14px rgba(0,200,255,0.55);
+  box-shadow: 0 0 14px rgba(0, 200, 255, 0.55);
   transform: scale(1.05);
 }
 
-body.noselect,
-body.noselect * {
-  user-select: none !important;
-}
+/* =========================
+   DRAG HIGHLIGHT
+========================= */
 
-/* Drag highlight */
 .slot.drag-possible {
   outline: 2px solid #22c55e !important;
+  opacity: 1 !important;
 }
 
 .slot.drag-invalid {
   outline: 2px solid #ef4444 !important;
   opacity: 0.3 !important;
+}
+
+/* =========================
+   BLACK BUTTON BAR (NEW)
+========================= */
+
+.cargo-buttons-bar {
+  width: 100%;
+  margin-top: 20px;
+  background: rgba(5, 5, 10, 0.92);
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #334155;
+
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.cargo-buttons-bar button {
+  padding: 10px 20px;
+  background: #111827;
+  border: 1px solid #475569;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #e5e7eb;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.cargo-buttons-bar button:hover {
+  background: #1e293b;
+}
+
+.cargo-buttons-bar .danger {
+  border-color: #ef4444;
+}
+
+/* =========================
+   EXPORT MODAL
+========================= */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5000;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  background: #0f172a;
+  padding: 20px;
+  border-radius: 12px;
+  width: 420px;
+  border: 1px solid #334155;
+  text-align: center;
+}
+
+.modal-content h3 {
+  margin-bottom: 10px;
+  color: #e2e8f0;
+}
+
+#export-output {
+  width: 100%;
+  height: 150px;
+  background: #020617;
+  border: 1px solid #475569;
+  color: #e2e8f0;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 15px;
+  font-size: 13px;
+}
+
+#closeModal {
+  padding: 8px 16px;
+  background: #1e293b;
+  border: 1px solid #475569;
+  border-radius: 8px;
+  color: #e2e8f0;
+  cursor: pointer;
 }

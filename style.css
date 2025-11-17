@@ -377,3 +377,7 @@ body {
   color: #e2e8f0;
   cursor: pointer;
 }
+
+.load-row select.load-bulk {
+    width: 60px;
+}

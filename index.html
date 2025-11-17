@@ -15,12 +15,12 @@
   <aside class="sidebar">
     <h2>Load Builder</h2>
 
-    <!-- Aircraft is fixed (EC-NOG), no dropdown needed -->
     <label>Aircraft Loaded:</label>
     <div class="aircraft-fixed">EC-NOG (A330-200F)</div>
 
     <button id="addLoadBtn" class="add-load-btn">+ Add Load</button>
 
+    <!-- LOAD LIST -->
     <div id="loadList" class="load-list"></div>
   </aside>
 
@@ -33,10 +33,8 @@
       <p class="subtitle">Dynamic Layout · Real AKE/PAG widths · Blocking logic</p>
     </header>
 
-    <!-- DECK RENDERS HERE -->
     <div id="deckContainer"></div>
 
-    <!-- BLACK BAR UNDER AFT HOLD -->
     <div class="cargo-buttons-bar">
       <button id="export-btn">Export Layout</button>
       <button id="clear-btn" class="danger">Clear All</button>
@@ -45,6 +43,7 @@
   </main>
 
 </div>
+
 
 <!-- EXPORT MODAL -->
 <div id="exportModal" class="modal hidden">
@@ -55,7 +54,6 @@
   </div>
 </div>
 
-<!-- IMPORTANT: NO MODULE TYPE -->
 <script src="script.js"></script>
 
 </body>

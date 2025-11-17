@@ -1,4 +1,60 @@
 /* ==========================================================
+   EMBEDDED AIRCRAFT — EC-NOG (A330-200F)
+========================================================== */
+
+const aircraft = {
+
+    registration: "EC-NOG",
+    type: "A330-200F",
+
+    /* --------------  LAYOUT (visual rows) -------------- */
+    layout: {
+
+        forward: {
+            akeLeft:  ["26L","25L","24L","23L","22L","21L","13L","12L","11L"],
+            akeRight: ["26R","25R","24R","23R","22R","21R","13R","12R","11R"],
+            pallet:   ["24P","23P","22P","21P","12P","11P"]
+        },
+
+        aft: {
+            akeLeft:  ["43L","42L","41L","34L","33L","32L","31L"],
+            akeRight: ["43R","42R","41R","34R","33R","32R","31R"],
+            pallet:   ["42P","41P","33P","32P","31P"]
+        }
+    },
+
+    /* --------------  POSITION LISTS -------------- */
+    containerPositions: [
+        "26L","25L","24L","23L","22L","21L","13L","12L","11L",
+        "26R","25R","24R","23R","22R","21R","13R","12R","11R",
+        "43L","42L","41L","34L","33L","32L","31L",
+        "43R","42R","41R","34R","33R","32R","31R"
+    ],
+
+    palletPositions: [
+        "24P","23P","22P","21P","12P","11P",
+        "42P","41P","33P","32P","31P"
+    ],
+
+    /* --------------  BLOCKING LOGIC -------------- */
+    palletBlocks: {
+        "24P": ["26L","26R","25L","25R"],
+        "23P": ["25L","25R","24L","24R"],
+        "22P": ["23L","23R","22L","22R"],
+        "21P": ["22L","22R","21L","21R"],
+        "12P": ["13L","13R","12L","12R"],
+        "11P": ["12L","12R","11L","11R"],
+
+        "42P": ["43L","43R","42L","42R"],
+        "41P": ["42L","42R","41L","41R"],
+        "33P": ["34L","34R","33L","33R"],
+        "32P": ["33L","33R","32L","32R"],
+        "31P": ["31L","31R"]
+    }
+};
+
+
+/* ==========================================================
    GLOBAL STATE
 ========================================================== */
 
@@ -6,71 +62,61 @@ let loads = [];
 let loadCounter = 1;
 let draggingULD = null;
 
-let activeAircraft = null;
 let containerPositions = [];
 let palletPositions = [];
 let palletBlocks = {};
 let containerBlocks = {};
 
 
-/* ==========================================================
-   LOAD AIRCRAFT PROFILE
-========================================================== */
-
-async function loadAircraftProfile(profile) {
-    try {
-        const module = await import(`./${profile}.js`);
-        const ac = module.aircraft;
-
-        activeAircraft = ac;
-        containerPositions = ac.containerPositions;
-        palletPositions = ac.palletPositions;
-        palletBlocks = ac.palletBlocks;
-
-        // Reverse-blocking map
-        containerBlocks = {};
-        for (const [pallet, list] of Object.entries(palletBlocks)) {
-            list.forEach(c => {
-                if (!containerBlocks[c]) containerBlocks[c] = [];
-                containerBlocks[c].push(pallet);
-            });
-        }
-
-        console.log("Loaded aircraft:", ac.registration);
-
-        renderDeck(ac.layout);
-        updateCargoDeck();
-
-    } catch (err) {
-        console.error("Aircraft loading error:", err);
-    }
-}
-
 
 /* ==========================================================
-   INITIALIZE APP
+   INITIALIZE (LOAD EC-NOG DIRECTLY)
 ========================================================== */
 
 window.addEventListener("DOMContentLoaded", () => {
 
-    document.getElementById("aircraftSelect")
-        .addEventListener("change", e => loadAircraftProfile(e.target.value));
+    // AUTO-LOAD EC-NOG (NO IMPORTS)
+    loadAircraftProfile();
 
     document.getElementById("addLoadBtn").addEventListener("click", addLoadRow);
     document.getElementById("export-btn").addEventListener("click", exportLayout);
     document.getElementById("clear-btn").addEventListener("click", clearAllLoads);
-
     document.getElementById("closeModal").addEventListener("click", () => {
         document.getElementById("exportModal").classList.add("hidden");
     });
-
-    // Default aircraft
-    loadAircraftProfile("ec-nog");
 });
 
 
+
 /* ==========================================================
-   BUILD THE CARGO DECK
+   LOAD AIRCRAFT (INTERNAL)
+========================================================== */
+
+function loadAircraftProfile() {
+
+    const ac = aircraft;
+
+    containerPositions = ac.containerPositions;
+    palletPositions = ac.palletPositions;
+    palletBlocks = ac.palletBlocks;
+
+    // Reverse block map for AKE
+    containerBlocks = {};
+    for (const [p, list] of Object.entries(palletBlocks)) {
+        list.forEach(c => {
+            if (!containerBlocks[c]) containerBlocks[c] = [];
+            containerBlocks[c].push(p);
+        });
+    }
+
+    renderDeck(ac.layout);
+    updateCargoDeck();
+}
+
+
+
+/* ==========================================================
+   RENDER DECK
 ========================================================== */
 
 function renderDeck(layout) {
@@ -81,28 +127,31 @@ function renderDeck(layout) {
     deck.appendChild(makeHoldSection("AFT HOLD", layout.aft));
 }
 
-function makeHoldSection(title, cfg) {
+function makeHoldSection(name, cfg) {
     const wrap = document.createElement("section");
     wrap.className = "hold-section";
-
-    wrap.innerHTML = `<h2>${title}</h2>`;
+    wrap.innerHTML = `<h2>${name}</h2>`;
 
     const grid = document.createElement("div");
-    grid.className = title.includes("AFT") ? "deck-grid aft-grid" : "deck-grid";
+    grid.className = name.includes("AFT") ? "deck-grid aft-grid" : "deck-grid";
 
-    grid.appendChild(makeRow(cfg.akeLeft,  "ake"));
-    grid.appendChild(makeRow(cfg.akeRight, "ake"));
-    grid.appendChild(makeRow(cfg.pallet,   "pallet"));
+    const L = document.createElement("div");
+    L.className = "ake-row";
+    cfg.akeLeft.forEach(p => L.appendChild(makeSlot(p, "ake")));
+    grid.appendChild(L);
+
+    const R = document.createElement("div");
+    R.className = "ake-row";
+    cfg.akeRight.forEach(p => R.appendChild(makeSlot(p, "ake")));
+    grid.appendChild(R);
+
+    const P = document.createElement("div");
+    P.className = "pallet-row";
+    cfg.pallet.forEach(p => P.appendChild(makeSlot(p, "pallet")));
+    grid.appendChild(P);
 
     wrap.appendChild(grid);
     return wrap;
-}
-
-function makeRow(list, type) {
-    const row = document.createElement("div");
-    row.className = type === "ake" ? "ake-row" : "pallet-row";
-    list.forEach(pos => row.appendChild(makeSlot(pos, type)));
-    return row;
 }
 
 function makeSlot(pos, type) {
@@ -113,8 +162,9 @@ function makeSlot(pos, type) {
 }
 
 
+
 /* ==========================================================
-   ADD ROW IN LOAD BUILDER
+   SIDEBAR ROW MANAGEMENT
 ========================================================== */
 
 function addLoadRow() {
@@ -144,53 +194,59 @@ function addLoadRow() {
 
     updatePositionDropdown(row, "AKE");
 
-    // Event bindings
-    row.querySelector(".load-type").addEventListener("change", onLoadTypeChange);
-    row.querySelector(".load-pos").addEventListener("change", onLoadUpdate);
-    row.querySelector(".load-uldid").addEventListener("input", onLoadUpdate);
-    row.querySelector(".delete-load").addEventListener("click", () => deleteLoad(row.dataset.loadid));
+    row.querySelector(".load-type").addEventListener("change", onTypeChanged);
+    row.querySelector(".load-uldid").addEventListener("input", onLoadEdited);
+    row.querySelector(".load-pos").addEventListener("change", onLoadEdited);
+
+    row.querySelector(".delete-load").addEventListener("click", () =>
+        deleteLoad(row.dataset.loadid)
+    );
 
     loads.push({ id: loadCounter, type: "AKE", uldid: "", position: "" });
+
     loadCounter++;
 }
 
-function onLoadTypeChange(e) {
+function onTypeChanged(e) {
     const row = e.target.closest(".load-row");
-    const load = loads.find(l => l.id == row.dataset.loadid);
+    const t = e.target.value;
 
-    load.type = e.target.value;
+    const load = loads.find(l => l.id == row.dataset.loadid);
+    load.type = t;
     load.position = "";
 
-    updatePositionDropdown(row, load.type);
+    updatePositionDropdown(row, t);
     updateCargoDeck();
 }
 
 function updatePositionDropdown(row, type) {
-    const s = row.querySelector(".load-pos");
-    s.innerHTML = "";
+    const sel = row.querySelector(".load-pos");
 
-    const list = (type === "AKE" || type === "AKN") ? containerPositions : palletPositions;
+    const list = (type === "AKE" || type === "AKN")
+        ? containerPositions
+        : palletPositions;
 
-    s.innerHTML = `
+    sel.innerHTML = `
         <option value="">--POS--</option>
         ${list.map(p => `<option value="${p}">${p}</option>`).join("")}
     `;
 }
 
 
+
 /* ==========================================================
-   UPDATE LOAD ENTRY
+   LOAD UPDATE + BLOCKING
 ========================================================== */
 
-function onLoadUpdate(e) {
+function onLoadEdited(e) {
     const row = e.target.closest(".load-row");
     const load = loads.find(l => l.id == row.dataset.loadid);
 
     load.type = row.querySelector(".load-type").value;
-    load.uldid = row.querySelector(".load-uldid").value.toUpperCase();
+    load.uldid = row.querySelector(".load-uldid").value.toUpperCase().trim();
     load.position = row.querySelector(".load-pos").value;
 
-    if (load.position && isPositionBlocked(load)) {
+    if (load.position && isPosBlocked(load)) {
         alert(`Position ${load.position} is blocked.`);
         row.querySelector(".load-pos").value = "";
         load.position = "";
@@ -199,39 +255,32 @@ function onLoadUpdate(e) {
     updateCargoDeck();
 }
 
-
-/* ==========================================================
-   BLOCKING LOGIC
-========================================================== */
-
-function isPositionBlocked(load) {
+function isPosBlocked(load) {
     if (!load.position) return false;
 
     if (["PAG","PMC","PAJ"].includes(load.type)) {
-        return palletBlocks[load.position]?.some(c => slotOccupied(c));
-    } else {
-        return containerBlocks[load.position]?.some(p => slotOccupied(p));
+        return palletBlocks[load.position]?.some(c => isSlotUsed(c));
     }
+    return containerBlocks[load.position]?.some(p => isSlotUsed(p));
 }
 
-function slotOccupied(pos) {
+function isSlotUsed(pos) {
     return loads.some(l => l.position === pos && l.uldid);
 }
 
 
+
 /* ==========================================================
-   UPDATE DECK
+   RENDER ULDs INSIDE SLOTS
 ========================================================== */
 
 function updateCargoDeck() {
 
-    // Reset
-    document.querySelectorAll(".slot").forEach(slot => {
-        slot.innerHTML = "";
-        slot.classList.remove("has-uld");
+    document.querySelectorAll(".slot").forEach(s => {
+        s.innerHTML = "";
+        s.classList.remove("has-uld");
     });
 
-    // Place ULDs
     for (const load of loads) {
         if (!load.position || !load.uldid) continue;
 
@@ -240,9 +289,9 @@ function updateCargoDeck() {
 
         const box = document.createElement("div");
         box.className = "uld-box";
-        box.textContent = load.uldid;
-        box.dataset.uldType = load.type;
         box.dataset.position = load.position;
+        box.dataset.uldType = load.type;
+        box.textContent = load.uldid;
 
         slot.appendChild(box);
         slot.classList.add("has-uld");
@@ -254,32 +303,37 @@ function updateCargoDeck() {
 }
 
 
+
 /* ==========================================================
-   BLOCKING VISUAL RENDER
+   BLOCKING VISUALS
 ========================================================== */
 
 function applyBlockingVisuals() {
-    document.querySelectorAll(".slot").forEach(s => s.classList.remove("disabled"));
+
+    document.querySelectorAll(".slot").forEach(
+        s => s.classList.remove("disabled")
+    );
 
     for (const load of loads) {
         if (!load.position) continue;
 
         if (["PAG","PMC","PAJ"].includes(load.type)) {
-            palletBlocks[load.position]?.forEach(disableSlot);
+            palletBlocks[load.position]?.forEach(markDisabled);
         } else {
-            containerBlocks[load.position]?.forEach(disableSlot);
+            containerBlocks[load.position]?.forEach(markDisabled);
         }
     }
 }
 
-function disableSlot(pos) {
-    const slot = document.querySelector(`.slot[data-pos="${pos}"]`);
-    if (slot) slot.classList.add("disabled");
+function markDisabled(pos) {
+    const s = document.querySelector(`.slot[data-pos="${pos}"]`);
+    if (s) s.classList.add("disabled");
 }
 
 
+
 /* ==========================================================
-   PERFECT DRAGGING (NO DRIFT) — FINAL VERSION
+   DRAGGING SYSTEM — PERFECT CURSOR CENTERED
 ========================================================== */
 
 function makeULDdraggable(box) {
@@ -290,12 +344,6 @@ function makeULDdraggable(box) {
         draggingULD = box;
         box.classList.add("dragging");
 
-        // Capture initial offset
-        const rect = box.getBoundingClientRect();
-        draggingULD._offX = e.clientX - rect.left;
-        draggingULD._offY = e.clientY - rect.top;
-
-        // Move to body
         document.body.appendChild(box);
 
         highlightSlots(box.dataset.uldType);
@@ -304,52 +352,45 @@ function makeULDdraggable(box) {
         document.addEventListener("mouseup", dragEnd);
     });
 
-
     function dragMove(e) {
         draggingULD.style.position = "fixed";
-        draggingULD.style.left = `${e.clientX - draggingULD._offX}px`;
-        draggingULD.style.top = `${e.clientY - draggingULD._offY}px`;
-        draggingULD.style.pointerEvents = "none";
+        draggingULD.style.left = e.clientX + "px";
+        draggingULD.style.top = e.clientY + "px";
+        draggingULD.style.transform = "translate(-50%, -50%)";
     }
-
 
     function dragEnd(e) {
         document.removeEventListener("mousemove", dragMove);
         document.removeEventListener("mouseup", dragEnd);
 
-        draggingULD.style.pointerEvents = "auto";
+        if (!draggingULD) return;
 
-        // Find nearest slot
-        let nearest = null;
-        let minDist = Infinity;
+        let best = null;
+        let bestDist = Infinity;
 
         document.querySelectorAll(".slot").forEach(slot => {
             const r = slot.getBoundingClientRect();
             const cx = r.left + r.width/2;
             const cy = r.top + r.height/2;
 
-            const dx = e.clientX - cx;
-            const dy = e.clientY - cy;
-            const d = Math.sqrt(dx*dx + dy*dy);
-
-            if (d < minDist) {
-                minDist = d;
-                nearest = slot;
+            const dist = Math.hypot(e.clientX - cx, e.clientY - cy);
+            if (dist < bestDist) {
+                bestDist = dist;
+                best = slot;
             }
         });
 
         if (
-            nearest &&
-            minDist < 85 &&
-            !nearest.classList.contains("disabled") &&
-            isValidSlotType(draggingULD.dataset.uldType, nearest.dataset.pos)
+            best &&
+            bestDist < 90 &&
+            isCorrectSlotType(draggingULD.dataset.uldType, best.dataset.pos) &&
+            !best.classList.contains("disabled")
         ) {
-            moveULD(draggingULD, nearest);
+            moveULD(draggingULD, best);
         }
 
         resetDrag();
     }
-
 
     function resetDrag() {
         if (!draggingULD) return;
@@ -357,20 +398,66 @@ function makeULDdraggable(box) {
         draggingULD.style.position = "";
         draggingULD.style.left = "";
         draggingULD.style.top = "";
+        draggingULD.style.transform = "";
 
         draggingULD.classList.remove("dragging");
-        clearHighlights();
+
         draggingULD = null;
+        clearHighlights();
+        updateCargoDeck();
     }
 }
 
 
+
 /* ==========================================================
-   DRAG HELPERS
+   SLOT TYPE VALIDATION
+========================================================== */
+
+function isCorrectSlotType(type, pos) {
+    const isP = pos.endsWith("P");
+
+    return (
+        (["AKE","AKN"].includes(type) && !isP) ||
+        (["PAG","PMC","PAJ"].includes(type) && isP)
+    );
+}
+
+
+
+/* ==========================================================
+   MOVE ULD TO NEW SLOT
+========================================================== */
+
+function moveULD(box, slot) {
+
+    const old = box.dataset.position;
+
+    const oldSlot = document.querySelector(`.slot[data-pos="${old}"]`);
+    if (oldSlot) oldSlot.classList.remove("has-uld");
+
+    slot.appendChild(box);
+    slot.classList.add("has-uld");
+
+    const load = loads.find(l => l.uldid === box.textContent);
+    if (load) load.position = slot.dataset.pos;
+
+    box.dataset.position = slot.dataset.pos;
+}
+
+
+
+/* ==========================================================
+   HIGHLIGHT SLOTS
 ========================================================== */
 
 function highlightSlots(type) {
+
     document.querySelectorAll(".slot").forEach(slot => {
+
+        slot.style.outline = "none";
+        slot.style.opacity = "1";
+
         const pos = slot.dataset.pos;
         const isP = pos.endsWith("P");
 
@@ -378,14 +465,14 @@ function highlightSlots(type) {
             (["AKE","AKN"].includes(type) && !isP) ||
             (["PAG","PMC","PAJ"].includes(type) && isP);
 
-        slot.style.outline = "none";
-        slot.style.opacity = valid ? "1" : "0.25";
-
-        if (!valid) return;
+        if (!valid) {
+            slot.style.opacity = "0.25";
+            return;
+        }
 
         if (slot.classList.contains("disabled")) {
-            slot.style.outline = "2px solid #dc2626";
             slot.style.opacity = "0.25";
+            slot.style.outline = "2px solid red";
             return;
         }
 
@@ -402,55 +489,50 @@ function clearHighlights() {
     });
 }
 
-function isValidSlotType(type, pos) {
-    return pos.endsWith("P")
-        ? ["PAG","PMC","PAJ"].includes(type)
-        : ["AKE","AKN"].includes(type);
-}
 
 
 /* ==========================================================
-   MOVE ULD
+   DELETE LOAD ROW
 ========================================================== */
 
-function moveULD(box, slot) {
-
-    const old = box.dataset.position;
-    const oldSlot = document.querySelector(`.slot[data-pos="${old}"]`);
-    if (oldSlot) oldSlot.classList.remove("has-uld");
-
-    slot.appendChild(box);
-    slot.classList.add("has-uld");
-
-    const load = loads.find(l => l.uldid === box.textContent);
-    if (load) load.position = slot.dataset.pos;
-
-    box.dataset.position = slot.dataset.pos;
-
+function deleteLoad(id) {
+    loads = loads.filter(l => l.id != id);
+    document.querySelector(`.load-row[data-loadid="${id}"]`)?.remove();
     updateCargoDeck();
 }
 
 
+
 /* ==========================================================
-   CLEAR & EXPORT
+   CLEAR ALL
 ========================================================== */
 
 function clearAllLoads() {
     if (!confirm("Clear ALL loads?")) return;
+
     loads = [];
     document.getElementById("loadList").innerHTML = "";
     updateCargoDeck();
 }
 
+
+
+/* ==========================================================
+   EXPORT LIR FORMAT
+========================================================== */
+
 function exportLayout() {
-    let text = `LIR EXPORT — ${activeAircraft.registration}\n\n`;
+    let txt = `LIR EXPORT — ${aircraft.registration}\n===========================\n\n`;
 
     loads.forEach(l => {
-        if (l.uldid && l.position) text += `${l.position}: ${l.uldid}\n`;
+        if (l.uldid && l.position)
+            txt += `${l.position}: ${l.uldid}\n`;
     });
 
-    document.getElementById("export-output").value = text;
+    const out = document.getElementById("export-output");
+    out.value = txt;
+
     document.getElementById("exportModal").classList.remove("hidden");
 
-    navigator.clipboard.writeText(text);
+    navigator.clipboard.writeText(txt);
 }

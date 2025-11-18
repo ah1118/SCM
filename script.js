@@ -14,31 +14,42 @@ const aircraft = {
         },
 
         aft: {
-            akeLeft:  ["43L","42L","41L","34L","33L","32L","31L"],
-            akeRight: ["43R","42R","41R","34R","33R","32R","31R"],
+            // EXACT ORDER YOU WANT
+            akeLeft:  ["53L","52L","43L","42L","41L","34L","33L","32L","31L"],
+            akeRight: ["53R","52R","43R","42R","41R","34R","33R","32R","31R"],
+
+            // pallets start under 43L, NOT under 52/53
             pallet:   ["42P","41P","33P","32P","31P"]
         }
     },
 
     containerPositions: [
+        // forward unchanged
         "26L","25L","24L","23L","22L","21L","13L","12L","11L",
         "26R","25R","24R","23R","22R","21R","13R","12R","11R",
-        "43L","42L","41L","34L","33L","32L","31L",
-        "43R","42R","41R","34L","33L","32L","31L"
+
+        // aft (updated)
+        "53L","52L","43L","42L","41L","34L","33L","32L","31L",
+        "53R","52R","43R","42R","41R","34R","33R","32R","31R"
     ],
 
     palletPositions: [
         "24P","23P","22P","21P","12P","11P",
+
+        // aft pallets unchanged – but start below 43L not 52/53
         "42P","41P","33P","32P","31P"
     ],
 
     palletBlocks: {
+        // forward unchanged
         "24P": ["26L","26R","25L","25R"],
         "23P": ["25L","25R","24L","24R"],
         "22P": ["23L","23R","22L","22R"],
         "21P": ["22L","22R","21L","21R"],
         "12P": ["13L","13R","12L","12R"],
         "11P": ["12L","12R","11L","11R"],
+
+        // aft — VERY IMPORTANT: DO NOT BLOCK 52/53
         "42P": ["43L","43R","42L","42R"],
         "41P": ["42L","42R","41L","41R"],
         "33P": ["34L","34R","33L","33R"],
@@ -149,7 +160,7 @@ function makeSlot(pos, type) {
 
 
 /* ==========================================================
-   ADD LOAD ROW — NEW .cell HTML
+   ADD LOAD ROW
 ========================================================== */
 
 function addLoadRow() {
@@ -340,7 +351,7 @@ function markDisabled(pos) {
 
 
 /* ==========================================================
-   DRAG & DROP LOGIC
+   DRAG & DROP
 ========================================================== */
 
 function makeULDdraggable(box) {
@@ -410,7 +421,7 @@ function makeULDdraggable(box) {
 
 
 /* ==========================================================
-   SLOT TYPE VALIDATION
+   SLOT TYPE CHECK
 ========================================================== */
 
 function isCorrectSlotType(type, pos) {
@@ -439,35 +450,8 @@ function moveULD(box, slot) {
 
 
 /* ==========================================================
-   SLOT HIGHLIGHTING
+   CLEAR HIGHLIGHTS
 ========================================================== */
-
-function highlightSlots(type) {
-    document.querySelectorAll(".slot").forEach(slot => {
-
-        slot.style.outline = "none";
-        slot.style.opacity = "1";
-
-        const pos = slot.dataset.pos;
-        const isP = pos.endsWith("P");
-
-        const valid =
-            (["AKE","AKN"].includes(type) && !isP) ||
-            (["PAG","PMC","PAJ"].includes(type) && isP);
-
-        if (!valid) { slot.style.opacity = "0.25"; return; }
-
-        if (slot.classList.contains("disabled")) {
-            slot.style.opacity = "0.25";
-            slot.style.outline = "2px solid red";
-            return;
-        }
-
-        if (!slot.classList.contains("has-uld")) {
-            slot.style.outline = "2px solid #22c55e";
-        }
-    });
-}
 
 function clearHighlights() {
     document.querySelectorAll(".slot").forEach(s => {
@@ -478,7 +462,7 @@ function clearHighlights() {
 
 
 /* ==========================================================
-   DELETE LOAD
+   DELETE
 ========================================================== */
 
 function deleteLoad(id) {
@@ -502,7 +486,7 @@ function clearAllLoads() {
 
 
 /* ==========================================================
-   EXPORT LIR
+   EXPORT
 ========================================================== */
 
 function exportLayout() {

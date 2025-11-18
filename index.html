@@ -11,9 +11,7 @@
 
 <div class="app-container">
 
-  <!-- ===================================================== -->
-  <!--                     LEFT SIDEBAR                      -->
-  <!-- ===================================================== -->
+  <!-- LEFT SIDEBAR -->
   <aside class="sidebar">
     <h2>Load Builder</h2>
 
@@ -22,55 +20,11 @@
 
     <button id="addLoadBtn" class="add-load-btn">+ Add Load</button>
 
-    <!-- TEMPLATE (NO HTML IN JS) -->
-    <template id="loadRowTemplate">
-      <div class="load-row">
-
-        <div class="cell">
-          <select class="load-type">
-            <option value="AKE">AKE</option>
-            <option value="AKN">AKN</option>
-            <option value="PAG">PAG</option>
-            <option value="PMC">PMC</option>
-            <option value="PAJ">PAJ</option>
-          </select>
-        </div>
-
-        <div class="cell">
-          <input type="text" class="load-uldid" placeholder="ULD">
-        </div>
-
-        <div class="cell">
-          <input type="text" class="load-weight" placeholder="KG" inputmode="numeric" pattern="[0-9]*">
-        </div>
-
-        <div class="cell">
-          <select class="load-bulk">
-            <option value="BY">BY</option>
-            <option value="FKT">FKT</option>
-          </select>
-        </div>
-
-        <div class="cell">
-          <select class="load-pos"></select>
-        </div>
-
-        <div class="cell">
-          <button class="delete-load">X</button>
-        </div>
-
-      </div>
-    </template>
-
-    <!-- Inserted load rows -->
+    <!-- LOAD LIST -->
     <div id="loadList" class="load-list"></div>
   </aside>
 
-
-
-  <!-- ===================================================== -->
-  <!--                     RIGHT CARGO AREA                  -->
-  <!-- ===================================================== -->
+  <!-- RIGHT CARGO AREA -->
   <main class="cargo-area">
 
     <header class="header">
@@ -78,10 +32,8 @@
       <p class="subtitle">Dynamic Layout · Real AKE/PAG widths · Blocking logic</p>
     </header>
 
-    <!-- MAIN DECK RENDERED HERE -->
     <div id="deckContainer"></div>
 
-    <!-- BUTTONS -->
     <div class="cargo-buttons-bar">
       <button id="export-btn">Export Layout</button>
       <button id="clear-btn" class="danger">Clear All</button>
@@ -91,11 +43,7 @@
 
 </div>
 
-
-
-<!-- ===================================================== -->
-<!--                      EXPORT MODAL                      -->
-<!-- ===================================================== -->
+<!-- EXPORT MODAL -->
 <div id="exportModal" class="modal hidden">
   <div class="modal-content">
     <h3>Exported Layout</h3>
@@ -104,8 +52,6 @@
   </div>
 </div>
 
-
-<!-- MAIN LOGIC -->
 <script src="script.js"></script>
 
 </body>

@@ -11,7 +11,9 @@
 
 <div class="app-container">
 
-  <!-- LEFT SIDEBAR -->
+  <!-- ===================================================== -->
+  <!--                     LEFT SIDEBAR                      -->
+  <!-- ===================================================== -->
   <aside class="sidebar">
     <h2>Load Builder</h2>
 
@@ -20,7 +22,7 @@
 
     <button id="addLoadBtn" class="add-load-btn">+ Add Load</button>
 
-    <!-- TEMPLATE FOR LOAD ROW (hidden) -->
+    <!-- TEMPLATE (NO HTML IN JS) -->
     <template id="loadRowTemplate">
       <div class="load-row">
 
@@ -60,11 +62,15 @@
       </div>
     </template>
 
-    <!-- LOAD ROWS ARE INSERTED HERE -->
+    <!-- Inserted load rows -->
     <div id="loadList" class="load-list"></div>
   </aside>
 
-  <!-- RIGHT CARGO AREA -->
+
+
+  <!-- ===================================================== -->
+  <!--                     RIGHT CARGO AREA                  -->
+  <!-- ===================================================== -->
   <main class="cargo-area">
 
     <header class="header">
@@ -72,10 +78,10 @@
       <p class="subtitle">Dynamic Layout · Real AKE/PAG widths · Blocking logic</p>
     </header>
 
-    <!-- CARGO DECK SLOTS -->
+    <!-- MAIN DECK RENDERED HERE -->
     <div id="deckContainer"></div>
 
-    <!-- EXPORT & CLEAR BUTTONS -->
+    <!-- BUTTONS -->
     <div class="cargo-buttons-bar">
       <button id="export-btn">Export Layout</button>
       <button id="clear-btn" class="danger">Clear All</button>
@@ -85,7 +91,11 @@
 
 </div>
 
-<!-- EXPORT MODAL -->
+
+
+<!-- ===================================================== -->
+<!--                      EXPORT MODAL                      -->
+<!-- ===================================================== -->
 <div id="exportModal" class="modal hidden">
   <div class="modal-content">
     <h3>Exported Layout</h3>
@@ -93,6 +103,7 @@
     <button id="closeModal">Close</button>
   </div>
 </div>
+
 
 <!-- MAIN LOGIC -->
 <script src="script.js"></script>

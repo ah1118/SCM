@@ -121,16 +121,34 @@ function makeHoldSection(name, cfg) {
     const grid = document.createElement("div");
     grid.className = name.includes("AFT") ? "deck-grid aft-grid" : "deck-grid";
 
+    /* ==========================================================
+       ADD PROTECTED WHITE BOX ONLY IN AFT HOLD
+    ========================================================== */
+    if (name.includes("AFT")) {
+        const protectedBox = document.createElement("div");
+        protectedBox.className = "protected-box";
+        grid.appendChild(protectedBox);
+    }
+
+    /* ==========================================================
+       NORMAL AKE LEFT ROW
+    ========================================================== */
     const L = document.createElement("div");
     L.className = "ake-row";
     cfg.akeLeft.forEach(p => L.appendChild(makeSlot(p, "ake")));
     grid.appendChild(L);
 
+    /* ==========================================================
+       NORMAL AKE RIGHT ROW
+    ========================================================== */
     const R = document.createElement("div");
     R.className = "ake-row";
     cfg.akeRight.forEach(p => R.appendChild(makeSlot(p, "ake")));
     grid.appendChild(R);
 
+    /* ==========================================================
+       PALLET ROW
+    ========================================================== */
     const P = document.createElement("div");
     P.className = "pallet-row";
     cfg.pallet.forEach(p => P.appendChild(makeSlot(p, "pallet")));
@@ -139,6 +157,7 @@ function makeHoldSection(name, cfg) {
     wrap.appendChild(grid);
     return wrap;
 }
+
 
 function makeSlot(pos, type) {
     const d = document.createElement("div");

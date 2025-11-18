@@ -327,3 +327,19 @@ body {
   padding: 10px;
   color: #e2e8f0;
 }
+/* ======================================
+   PROTECTED WHITE BOX IN AFT HOLD
+====================================== */
+.protected-box {
+  width: 120px;
+  height: 90px;
+
+  background: #ffffff;
+  border-radius: 14px;
+  margin-right: 20px;
+
+  border: 2px solid #d1d5db;
+  box-shadow: 0 0 12px rgba(255,255,255,0.4);
+
+  flex-shrink: 0;
+}

@@ -439,36 +439,61 @@ function markDisabled(pos) {
 function makeULDdraggable(box) {
 
     box.addEventListener("mousedown", e => {
-        e.preventDefault();
-        draggingULD = box;
-        isDragging = true;   // <--- FIXED
+    e.preventDefault();
 
-        const oldPos = box.dataset.position;
+    const startX = e.clientX;
+    const startY = e.clientY;
 
-        const oldSlot = document.querySelector(`.slot[data-pos="${oldPos}"]`);
-        if (oldSlot) oldSlot.removeChild(box);
+    draggingULD = box;
+    isDragging = false; // ❗ Not dragging yet
 
-        document.body.appendChild(box);
+    draggingULD.oldPos = box.dataset.position;
 
-        box.classList.add("dragging");
-        box.style.position = "fixed";
-        box.style.left = e.clientX + "px";
-        box.style.top = e.clientY + "px";
-        box.style.transform = "translate(-50%, -50%)";
+    function startRealDrag(e2) {
+        const dx = Math.abs(e2.clientX - startX);
+        const dy = Math.abs(e2.clientY - startY);
 
-        highlightSlots(box.dataset.uldType);
+        if (!isDragging && (dx > 5 || dy > 5)) {
+            // ⭐ NOW start dragging for real
+            isDragging = true;
 
-        document.addEventListener("mousemove", dragMove);
-        document.addEventListener("mouseup", dragEnd);
-    });
+            const oldSlot = document.querySelector(`.slot[data-pos="${draggingULD.oldPos}"]`);
+            if (oldSlot) oldSlot.removeChild(draggingULD);
 
-    function dragMove(e) {
-        draggingULD.style.left = e.clientX + "px";
-        draggingULD.style.top = e.clientY + "px";
+            document.body.appendChild(draggingULD);
+
+            draggingULD.classList.add("dragging");
+            draggingULD.style.position = "fixed";
+            draggingULD.style.left = e2.clientX + "px";
+            draggingULD.style.top = e2.clientY + "px";
+            draggingULD.style.transform = "translate(-50%, -50%)";
+
+            highlightSlots(draggingULD.dataset.uldType);
+        }
+
+        if (isDragging) {
+            draggingULD.style.left = e2.clientX + "px";
+            draggingULD.style.top = e2.clientY + "px";
+        }
     }
 
-    function dragEnd(e) {
-    document.removeEventListener("mousemove", dragMove);
+    function endDrag(e2) {
+        document.removeEventListener("mousemove", startRealDrag);
+        document.removeEventListener("mouseup", endDrag);
+
+        if (!isDragging) {
+            draggingULD = null;
+            return;
+        }
+
+        dragEnd(e2); // use your existing dragEnd()
+    }
+
+    document.addEventListener("mousemove", startRealDrag);
+    document.addEventListener("mouseup", endDrag);
+});
+
+function dragEnd(e) {
     document.removeEventListener("mouseup", dragEnd);
 
     if (!draggingULD) return;
@@ -477,8 +502,8 @@ function makeULDdraggable(box) {
 
     document.querySelectorAll(".slot").forEach(slot => {
         const r = slot.getBoundingClientRect();
-        const cx = r.left + r.width / 2;
-        const cy = r.top + r.height / 2;
+        const cx = r.left + r.width/2;
+        const cy = r.top + r.height/2;
 
         const d = Math.hypot(e.clientX - cx, e.clientY - cy);
         if (d < bestDist) bestDist = d, best = slot;
@@ -487,24 +512,23 @@ function makeULDdraggable(box) {
     const loadType = draggingULD.dataset.uldType;
     const oldPos = draggingULD.oldPos;
 
-    // VALID DROP?
     if (
         best &&
         bestDist < 90 &&
         isCorrectSlotType(loadType, best.dataset.pos) &&
-        !best.classList.contains("disabled")
+        !best.classList.contains("disabled")     // ⭐ ENSURE BLOCKED POS CAN’T ACCEPT DROP
     ) {
         moveULD(draggingULD, best);
-    }
-    else {
-        // ⬅ INVALID DROP → return to original slot
+    } else {
         const returnSlot = document.querySelector(`.slot[data-pos="${oldPos}"]`);
         if (returnSlot) moveULD(draggingULD, returnSlot);
     }
 
     draggingULD.classList.remove("dragging");
     draggingULD.removeAttribute("style");
+
     draggingULD = null;
+    isDragging = false;      // ⭐ FIX
 
     clearHighlights();
     updateCargoDeck();

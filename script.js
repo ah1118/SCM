@@ -212,6 +212,17 @@ function makeHoldSection(name, cfg) {
 }
 
 /* ==========================================================
+   CREATE SLOT BOX (AKE / PALLET)
+========================================================== */
+function makeSlot(pos, type) {
+    const d = document.createElement("div");
+    d.className = `slot ${type}`;
+    d.dataset.pos = pos;
+    return d;
+}
+
+
+/* ==========================================================
    ADD LOAD ROW — NEW .cell HTML
 ========================================================== */
 

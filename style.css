@@ -335,13 +335,11 @@ body {
 ====================================== */
 .protected-box {
   width: 140px;
-  height: 110px;
-  background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 0 18px rgba(255,255,255,0.6);
-  border: 2px solid #d1d5db;
-  flex-shrink: 0;
-  margin-right: 20px;
+  height: 120px;
+  background: white;
+  border-radius: 18px;
+  border: 2px solid #e5e7eb;
+  box-shadow: 0 0 12px rgba(255,255,255,0.65);
 }
 
 .aft-grid-wrapper {
@@ -353,7 +351,9 @@ body {
 
 .aft-left-col {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 10px;
 }
 
 .aft-right-col {
@@ -362,5 +362,12 @@ body {
   gap: 10px;
 }
 
+/* STACK OF 3 BULK BAYS (51 / 52 / 53) */
+.bulk-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 22px; /* spacing between the 3 boxes */
+  margin-top: 0px;
+}
 
 

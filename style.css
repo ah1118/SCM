@@ -172,7 +172,6 @@ body {
 .aft-right-col {
   display: flex;
   flex-direction: column;
-  gap: 10px;
 }
 
 .ake-row,

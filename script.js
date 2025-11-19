@@ -16,7 +16,9 @@ const aircraft = {
         aft: {
             akeLeft:  ["43L","42L","41L","34L","33L","32L","31L"],
             akeRight: ["43R","42R","41R","34R","33R","32R","31R"],
-            pallet:   ["42P","41P","33P","32P","31P"]
+            pallet:   ["42P","41P","33P","32P","31P"],
+
+            bulk: ["53","52","51"]   // <-- NEW: REAL BULK POSITIONS
         }
     },
 
@@ -31,6 +33,8 @@ const aircraft = {
         "24P","23P","22P","21P","12P","11P",
         "42P","41P","33P","32P","31P"
     ],
+
+    bulkPositions: ["53","52","51"],  // <-- NEW
 
     palletBlocks: {
         "24P": ["26L","26R","25L","25R"],
@@ -57,6 +61,7 @@ let loadCounter = 1;
 
 let containerPositions = [];
 let palletPositions = [];
+let bulkPositions = [];
 let palletBlocks = {};
 let containerBlocks = {};
 
@@ -86,8 +91,10 @@ window.addEventListener("DOMContentLoaded", () => {
 function loadAircraftProfile() {
     containerPositions = aircraft.containerPositions;
     palletPositions = aircraft.palletPositions;
+    bulkPositions = aircraft.bulkPositions;
     palletBlocks = aircraft.palletBlocks;
 
+    /* CONTAINER BLOCK BUILD */
     containerBlocks = {};
     for (const [p, list] of Object.entries(palletBlocks)) {
         list.forEach(c => {
@@ -102,7 +109,7 @@ function loadAircraftProfile() {
 
 
 /* ==========================================================
-   RENDER DECK
+   RENDER DECK (WITH REAL BULK SLOTS)
 ========================================================== */
 
 function renderDeck(layout) {
@@ -118,48 +125,35 @@ function makeHoldSection(name, cfg) {
     wrap.className = "hold-section";
     wrap.innerHTML = `<h2>${name}</h2>`;
 
-    /* MAIN GRID */
     const grid = document.createElement("div");
     grid.className = name.includes("AFT") ? "aft-grid-wrapper" : "deck-grid";
 
-    /* ===========================
-       AFT HOLD (with 53 / 52 / 51)
-    ============================== */
+    /* ================================
+       AFT HOLD WITH REAL BULK SLOTS
+    ================================= */
     if (name.includes("AFT")) {
 
         const leftCol = document.createElement("div");
         leftCol.className = "aft-left-col";
 
-        /* ===== REAL BULK LAYOUT (53 tall, 52 top, 51 bottom) ===== */
         const bulkColumn = document.createElement("div");
         bulkColumn.className = "bulk-column";
 
-        /* --- 53 (tall box) --- */
-        const box53 = document.createElement("div");
-        box53.className = "bulk-53";
-        box53.textContent = "53";   // <-- ADDED
-
-        /* --- 52 + 51 stack --- */
+        /* 53 SLOT */
+        const box53 = makeBulkSlot("53", "bulk-53");
         const smallStack = document.createElement("div");
         smallStack.className = "bulk-small-stack";
 
-        const box52 = document.createElement("div");
-        box52.className = "bulk-small";
-        box52.textContent = "52";   // <-- ADDED
-
-        const box51 = document.createElement("div");
-        box51.className = "bulk-small";
-        box51.textContent = "51";   // <-- ADDED
-
-        smallStack.appendChild(box52);
-        smallStack.appendChild(box51);
+        /* 52 + 51 */
+        smallStack.appendChild(makeBulkSlot("52", "bulk-small"));
+        smallStack.appendChild(makeBulkSlot("51", "bulk-small"));
 
         bulkColumn.appendChild(box53);
         bulkColumn.appendChild(smallStack);
 
         leftCol.appendChild(bulkColumn);
 
-        /* RIGHT GRID (AKE L / AKE R / PALLETS) */
+        /* RIGHT SIDE GRID */
         const rightCol = document.createElement("div");
         rightCol.className = "aft-right-col";
 
@@ -181,14 +175,10 @@ function makeHoldSection(name, cfg) {
         grid.appendChild(leftCol);
         grid.appendChild(rightCol);
         wrap.appendChild(grid);
-
         return wrap;
     }
 
-    /* ===========================
-       FORWARD HOLD (unchanged)
-    ============================== */
-
+    /* FORWARD HOLD (unchanged) */
     const gridFwd = document.createElement("div");
     gridFwd.className = "deck-grid";
 
@@ -211,9 +201,21 @@ function makeHoldSection(name, cfg) {
     return wrap;
 }
 
+/* REAL BULK SLOT CREATOR */
+function makeBulkSlot(pos, cls) {
+    const d = document.createElement("div");
+    d.className = cls;
+    d.dataset.pos = pos;             // <-- REAL SLOT
+    d.classList.add("slot", "bulk-slot");
+    d.textContent = pos;
+    return d;
+}
+
+
 /* ==========================================================
-   CREATE SLOT BOX (AKE / PALLET)
+   GENERATE SLOT (AKE / PALLET)
 ========================================================== */
+
 function makeSlot(pos, type) {
     const d = document.createElement("div");
     d.className = `slot ${type}`;
@@ -223,7 +225,7 @@ function makeSlot(pos, type) {
 
 
 /* ==========================================================
-   ADD LOAD ROW — NEW .cell HTML
+   ADD LOAD ROW
 ========================================================== */
 
 function addLoadRow() {
@@ -238,6 +240,7 @@ function addLoadRow() {
             <select class="load-type">
                 <option value="AKE">AKE</option>
                 <option value="AKN">AKN</option>
+                <option value="BLK">BLK</option>
                 <option value="PAG">PAG</option>
                 <option value="PMC">PMC</option>
                 <option value="PAJ">PAJ</option>
@@ -245,7 +248,7 @@ function addLoadRow() {
         </div>
 
         <div class="cell">
-            <input type="text" class="load-uldid" placeholder="ULD">
+            <input type="text" class="load-uldid" placeholder="ULD / DESC">
         </div>
 
         <div class="cell">
@@ -282,7 +285,6 @@ function addLoadRow() {
     row.querySelector(".load-uldid").addEventListener("input", onLoadEdited);
     row.querySelector(".load-bulk").addEventListener("change", onLoadEdited);
     row.querySelector(".load-pos").addEventListener("change", onLoadEdited);
-
     row.querySelector(".delete-load").addEventListener("click", () =>
         deleteLoad(row.dataset.loadid)
     );
@@ -302,12 +304,6 @@ function onLoadEdited(e) {
     load.bulk = row.querySelector(".load-bulk").value;
     load.position = row.querySelector(".load-pos").value;
 
-    if (load.position && isPosBlocked(load)) {
-        alert(`Position ${load.position} is blocked.`);
-        row.querySelector(".load-pos").value = "";
-        load.position = "";
-    }
-
     updateCargoDeck();
 }
 
@@ -323,12 +319,18 @@ function onTypeChanged(e) {
     updateCargoDeck();
 }
 
+
+/* ==========================================================
+   POSITION DROPDOWN LOGIC
+========================================================== */
+
 function updatePositionDropdown(row, type) {
     const sel = row.querySelector(".load-pos");
 
-    const list = (type === "AKE" || type === "AKN")
-        ? containerPositions
-        : palletPositions;
+    let list =
+        (type === "AKE" || type === "AKN") ? containerPositions :
+        (type === "PAG" || type === "PMC" || type === "PAJ") ? palletPositions :
+        bulkPositions;   // <-- ONLY BLK gets 51/52/53
 
     sel.innerHTML = `
         <option value="">--POS--</option>
@@ -338,30 +340,31 @@ function updatePositionDropdown(row, type) {
 
 
 /* ==========================================================
-   BLOCKING LOGIC
+   TYPE CHECKING — WHERE EACH TYPE CAN GO
 ========================================================== */
 
-function isPosBlocked(load) {
-    if (!load.position) return false;
+function isCorrectSlotType(type, pos) {
 
-    if (["PAG","PMC","PAJ"].includes(load.type)) {
-        return palletBlocks[load.position]?.some(c => isSlotUsed(c));
-    }
-    return containerBlocks[load.position]?.some(p => isSlotUsed(p));
-}
+    const isPallet = pos.endsWith("P");
+    const isBulk   = ["53","52","51"].includes(pos);
 
-function isSlotUsed(pos) {
-    return loads.some(l => l.position === pos && l.uldid);
+    if (type === "BLK") return isBulk;
+
+    if (["AKE","AKN"].includes(type)) return !isPallet && !isBulk;
+
+    if (["PAG","PMC","PAJ"].includes(type)) return isPallet;
+
+    return false;
 }
 
 
 /* ==========================================================
-   RENDER ULDs
+   UPDATE CARGO DECK
 ========================================================== */
 
 function updateCargoDeck() {
     document.querySelectorAll(".slot").forEach(s => {
-        s.innerHTML = "";
+        s.innerHTML = s.classList.contains("bulk-slot") ? s.dataset.pos : "";
         s.classList.remove("has-uld");
     });
 
@@ -382,34 +385,6 @@ function updateCargoDeck() {
 
         makeULDdraggable(box);
     }
-
-    applyBlockingVisuals();
-}
-
-
-/* ==========================================================
-   VISUAL BLOCKING
-========================================================== */
-
-function applyBlockingVisuals() {
-    document.querySelectorAll(".slot").forEach(s =>
-        s.classList.remove("disabled")
-    );
-
-    for (const load of loads) {
-        if (!load.position) continue;
-
-        if (["PAG","PMC","PAJ"].includes(load.type)) {
-            palletBlocks[load.position]?.forEach(markDisabled);
-        } else {
-            containerBlocks[load.position]?.forEach(markDisabled);
-        }
-    }
-}
-
-function markDisabled(pos) {
-    const slot = document.querySelector(`.slot[data-pos="${pos}"]`);
-    if (slot) slot.classList.add("disabled");
 }
 
 
@@ -467,8 +442,7 @@ function makeULDdraggable(box) {
         if (
             best &&
             bestDist < 90 &&
-            isCorrectSlotType(draggingULD.dataset.uldType, best.dataset.pos) &&
-            !best.classList.contains("disabled")
+            isCorrectSlotType(draggingULD.dataset.uldType, best.dataset.pos)
         ) {
             moveULD(draggingULD, best);
         }
@@ -480,20 +454,6 @@ function makeULDdraggable(box) {
         clearHighlights();
         updateCargoDeck();
     }
-}
-
-
-/* ==========================================================
-   SLOT TYPE VALIDATION
-========================================================== */
-
-function isCorrectSlotType(type, pos) {
-    const isP = pos.endsWith("P");
-
-    return (
-        (["AKE","AKN"].includes(type) && !isP) ||
-        (["PAG","PMC","PAJ"].includes(type) && isP)
-    );
 }
 
 
@@ -523,19 +483,10 @@ function highlightSlots(type) {
         slot.style.opacity = "1";
 
         const pos = slot.dataset.pos;
-        const isP = pos.endsWith("P");
 
-        const valid =
-            (["AKE","AKN"].includes(type) && !isP) ||
-            (["PAG","PMC","PAJ"].includes(type) && isP);
+        const valid = isCorrectSlotType(type, pos);
 
         if (!valid) { slot.style.opacity = "0.25"; return; }
-
-        if (slot.classList.contains("disabled")) {
-            slot.style.opacity = "0.25";
-            slot.style.outline = "2px solid red";
-            return;
-        }
 
         if (!slot.classList.contains("has-uld")) {
             slot.style.outline = "2px solid #22c55e";

@@ -163,10 +163,11 @@ body {
 }
 
 .aft-grid-wrapper {
-  display: flex;
-  flex-direction: row;
-  gap: 30px;
-  align-items: flex-start;
+    display: flex;
+    flex-direction: row;
+    gap: 30px;
+    justify-content: center;   /* <-- center children horizontally */
+    align-items: flex-start;
 }
 
 .aft-right-col {

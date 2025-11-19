@@ -78,7 +78,6 @@ body {
 
   padding: 3px 3px;
   width: 100%;
-  min-height: 0px;
   overflow: hidden;
 }
 
@@ -162,28 +161,30 @@ body {
   margin: 0 auto;
 }
 
+/*** AFT GRID FIXED (MATCH FORWARD HOLD) ***/
 .aft-grid-wrapper {
   display: flex;
   flex-direction: row;
   gap: 30px;
-  align-items: flex-start;
+  align-items: center;           /* ⭐ centers AKE rows vertically */
+  margin-top: 0;
 }
 
 .aft-right-col {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 10px;                    /* ⭐ EXACT same as forward rows */
 }
 
 .ake-row,
 .pallet-row {
   display: flex;
   gap: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 10px;          /* ⭐ SAME as forward hold */
 }
 
 /* =========================
-   SLOTS (POS INSIDE BOX)
+   SLOTS
 ========================= */
 .slot {
   height: 48px;
@@ -203,16 +204,14 @@ body {
   font-weight: 700;
 }
 
-.slot::before { display: none; }
-
 .slot::after {
   content: attr(data-pos);
   position: absolute;
   inset: 0;
+
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1;
 
   color: #cfd8ff;
   font-size: 15px;
@@ -240,20 +239,8 @@ body {
   color: #6b7280 !important;
 }
 
-/* HIGHLIGHTS */
-.slot.highlight {
-  outline: 2px solid #22c55e !important;
-  outline-offset: -2px;
-}
-
-.slot.invalid {
-  outline: 2px solid #ef4444 !important;
-  outline-offset: -2px;
-  opacity: 0.35;
-}
-
 /* =========================
-   ULD BOXES
+   ULD BOX
 ========================= */
 .uld-box {
   padding: 5px 8px;
@@ -338,37 +325,22 @@ body {
 }
 
 /* ======================================
-   REAL BULK BAY LAYOUT (53 / 52 / 51)
+   BULK BAY (MATCHING FORWARD SPACING)
 ====================================== */
-
 .bulk-column {
   display: flex;
-  flex-direction: row;
-  gap: 20px;
-  padding-left: 5px;
-}
-
-/* 53 — tall */
-.bulk-53 {
-  width: 150px;
-  height: 240px;
-  background: white;
-  border-radius: 18px;
-  border: 2px solid #e5e7eb;
-  box-shadow: 0 0 12px rgba(255,255,255,0.6);
-}
-
-/* stack for 52 and 51 */
-.bulk-small-stack {
-  display: flex;
   flex-direction: column;
-  gap: 22px;
+  justify-content: center;   /* ⭐ vertically center against AKE rows */
+  gap: 10px;                 /* ⭐ SAME as row spacing */
+  padding: 0;
+  margin: 0;
 }
 
-/* 52 + 51 */
+/* All bulk boxes same visual height */
+.bulk-53,
 .bulk-small {
-  width: 115px;
-  height: 105px;
+  width: 120px;
+  height: 90px;              /* ⭐ MATCHES 48px+gap row height */
   background: white;
   border-radius: 18px;
   border: 2px solid #e5e7eb;

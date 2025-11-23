@@ -25,7 +25,7 @@ function exportLayout() {
 
     let output = [];
     output.push("CPM");
-    output.push(`${flightNum}/${day}.${reg} ${dest}`);
+    output.push(`${flightNum}/${day}.${reg}.${aircraft.ldm.seatCode}`);;
 
     // Map pos → load
     const loadsMap = {};
@@ -213,3 +213,4 @@ function formatAKEPair(L, R, map, dest) {
 document.getElementById("closeModal").onclick = function () {
     document.getElementById("exportModal").classList.add("hidden");
 };
+

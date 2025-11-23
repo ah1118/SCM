@@ -8,7 +8,8 @@ const aircraft_ECNOG = {
 
     ldm: {
         station: "CZL",
-        seatCode: "380",
+        seatCode: "J12Y374",
+        seatTotal: "386",
         seatConfig: "2/4/0"
     },
 

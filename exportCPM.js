@@ -1,11 +1,25 @@
+const ULD_TARE = {
+    "AKE": 80,
+    "AKN": 80,
+    "PAG": 103,
+    "PMC": 103,
+    "PAJ": 103,
+    "BLK": 0
+};
+
 function exportLayout() {
+
+    if (!allLoadsValid()) {
+        alert("Fill all ULD details before exporting.\n(ULD ID, Weight, BULK, Position)");
+        return;
+    }
+
     const flightNum = document.getElementById("flightNumber").value || "XX";
     const dest      = document.getElementById("flightDestination").value || "XXX";
-    const aircraft  = window.aircraft; 
+    const aircraft  = window.aircraft;
     const reg       = aircraft.registration;
 
-
-    // get today day only
+    // today day only
     const today = new Date();
     const day = today.getDate().toString().padStart(2, "0");
 
@@ -18,9 +32,17 @@ function exportLayout() {
     for (const l of loads) loadsMap[l.position] = l;
 
     function isEmpty(pos) {
-        if (!loadsMap[pos]) return true;
-        if (loadsMap[pos].type === "BLK") return false; // BLK counts as filled
-        return !loadsMap[pos].uldid;
+    const load = loadsMap[pos];
+    if (!load) return true;
+
+    // BLK is never empty
+    if (load.type === "BLK") return false;
+
+    // FKT is NOT empty
+    if (load.bulk === "FKT") return false;
+
+    // Normal ULD without ID → empty
+    return !load.uldid;
     }
 
     /* ================================
@@ -28,7 +50,7 @@ function exportLayout() {
     =================================*/
     const blockedPositions = new Set();
 
-    // 1A pallet blocks containers
+    // pallet blocks containers
     for (const pallet in aircraft.palletBlocks) {
         if (!isEmpty(pallet)) {
             for (const pos of aircraft.palletBlocks[pallet])
@@ -36,7 +58,7 @@ function exportLayout() {
         }
     }
 
-    // 1B container blocks pallet
+    // container blocks pallet
     for (const pallet in aircraft.palletBlocks) {
         for (const pos of aircraft.palletBlocks[pallet]) {
             if (!isEmpty(pos)) {
@@ -76,18 +98,15 @@ function exportLayout() {
     =================================*/
     let allLines = [];
 
-    // pallet-only entries
     for (const pallet of palletOnly) {
         allLines.push({ pos: pallet, text: formatUld(pallet, loadsMap[pallet], dest) });
     }
 
-    // AKE pairs
     for (const [L, R] of aircraft.positionOrder) {
         if (!akePairAllowed(L, R)) continue;
         allLines.push({ pos: L, text: formatAKEPair(L, R, loadsMap, dest) });
     }
 
-    // remaining pallets
     const remainingPallets = aircraft.palletPositions.filter(
         p => !palletOnly.has(p) && !blockedPositions.has(p)
     );
@@ -100,7 +119,7 @@ function exportLayout() {
         allLines.push({ pos: pallet, text: line });
     }
 
-    // bulk 51 / 52 / 53
+    // bulk 51–53
     for (const pos of ["51", "52", "53"]) {
         const load = loadsMap[pos];
         let line = (!load)
@@ -109,27 +128,32 @@ function exportLayout() {
         allLines.push({ pos, text: line });
     }
 
-    /* ================================
-       SORT + OUTPUT
-    =================================*/
     allLines.sort((a, b) => parseInt(a.pos) - parseInt(b.pos));
     for (const e of allLines) output.push(e.text);
 
     /* ============================================
-       TOTAL PIECES = SUM OF ALL WEIGHTS
+       TOTAL PIECES (UI) + NET CARGO WEIGHT
     ============================================ */
-    const totalPieces = loads.reduce(
-        (sum, l) => sum + (parseInt(l.weight) || 0),
-        0
-    );
+    const uiPieces = parseInt(document.getElementById("sumPieces").value || "0");
 
-    output.push(`SI CZL-${dest} C 0 M 0 Total Pieces/${totalPieces} O 0 T 0`);
+    let cargoTotalNet = 0;
 
-    /* ================================
-       APPLY TO TEXTAREA + MODAL
-    =================================*/
+    loads.forEach(l => {
+        const gross = parseInt(l.weight) || 0;
+        const tare  = ULD_TARE[l.type] || 0;
+        const net   = Math.max(0, gross - tare);
+        cargoTotalNet += net;
+    });
+
+    // FINAL CPM FOOTER  (NOW CORRECT)
+    output.push(`SI CZL-${dest} C 0 M 0 B ${uiPieces}/${cargoTotalNet} O 0 T 0`);
+
+    /* ============================
+       SHOW MODAL
+    ============================ */
     const txt = document.getElementById("export-output");
     txt.value = output.join("\n");
+
     const modal = document.querySelector(".modal-content");
     modal.style.width = "auto";
     modal.style.height = "auto";
@@ -144,46 +168,48 @@ function exportLayout() {
 
 function formatUld(pos, load, dest) {
 
-    if (!load) return `-${pos}/X`;
+    if (!load) return `-${pos}/X`;   // EMPTY → KEEP /X (your rule)
 
-    // ============================
-    //  BLK (KEEP SAME AS BEFORE)
-    // ============================
+    // BLK slot
     if (load.type === "BLK") {
         const weight = load.weight || 0;
         const bulk   = load.bulk === "FKT" ? "E" : (load.bulk || "BY");
         return `-${pos}/${weight}/${bulk}/${dest}`;
     }
 
-    // ============================
-    //  SPECIAL RULE FOR FKT
-    // ============================
+    // ⭐ FKT RULE → ALWAYS: -POS/TYPE/E/DEST
     if (load.bulk === "FKT") {
-        // FKT → E and REMOVE ULDID + WEIGHT
         return `-${pos}/${load.type}/E/${dest}`;
     }
 
-    // ============================
-    //  NORMAL ULD FORMAT
-    // ============================
-    if (!load.uldid) return `-${pos}/X`;
+    // Normal ULD (AKE/PAG/PMC/…)
+    const idPart = load.uldid ? load.type + load.uldid : load.type;
+    const weight = load.weight || "X";   // X allowed when empty
+    const bulk   = load.bulk || "BY";
 
-    const weight = load.weight || "X";
-    const bulk   = load.bulk === "FKT" ? "E" : (load.bulk || "BY");
-    const typeWithId = `${load.type}${load.uldid}`;
-
-    return `-${pos}/${typeWithId}/${weight}/${bulk}/${dest}`;
+    return `-${pos}/${idPart}/${weight}/${bulk}/${dest}`;
 }
+
+
 
 
 
 function formatAKEPair(L, R, map, dest) {
     const left  = formatUld(L, map[L], dest);
     const right = formatUld(R, map[R], dest);
+
+    // both empty → print nothing
+    if (!left && !right) return "";
+
+    // left only
+    if (left && !right) return left;
+
+    // right only
+    if (!left && right) return right;
+
+    // both exist
     return `${left}${right}`;
 }
-
-
 document.getElementById("closeModal").onclick = function () {
     document.getElementById("exportModal").classList.add("hidden");
 };

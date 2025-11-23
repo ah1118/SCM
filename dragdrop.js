@@ -47,40 +47,39 @@ function applyBlockingVisuals() {
 
 function rebuildPosOptions(selectEl, loadType, currentPos) {
 
-    // 1. ALL current used positions
-    const used = new Set(loads
-        .filter(l => l.position && l.position !== currentPos)
-        .map(l => l.position));
+    const used = new Set(
+        loads
+            .filter(l => l.position && l.position !== currentPos)
+            .map(l => l.position)
+    );
 
-    // 2. Clear old options
     selectEl.innerHTML = "";
 
-    // 3. Go through every aircraft slot
+    // ✅ Add "POS" placeholder at top
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "POS";
+    selectEl.appendChild(placeholder);
+
     document.querySelectorAll(".slot").forEach(slot => {
 
         const pos = slot.dataset.pos;
 
-        // ❌ Blocked visually
         if (slot.classList.contains("disabled")) return;
-
-        // ❌ Wrong slot type (AKE/PAG/etc)
         if (!isCorrectSlotType(loadType, pos)) return;
-
-        // ❌ Already used by another container/pallet
         if (used.has(pos)) return;
 
-        // ✔ Valid → Add
         const opt = document.createElement("option");
         opt.value = pos;
         opt.textContent = pos;
         selectEl.appendChild(opt);
     });
 
-    // restore current POS if still valid
     if (currentPos && [...selectEl.options].some(o => o.value === currentPos)) {
         selectEl.value = currentPos;
     }
 }
+
 
 
 
@@ -187,7 +186,27 @@ function dragEnd(e) {
         isCorrectSlotType(loadType, best.dataset.pos) &&
         !best.classList.contains("disabled")
     ) {
+        // 🚫 PREVENT DROPPING INTO OCCUPIED SLOT
+        if (best.querySelector(".uld-box")) {
+            alert(`Position ${best.dataset.pos} already has a load.`);
+
+            const returnSlot = document.querySelector(`.slot[data-pos="${oldPos}"]`);
+            if (returnSlot) moveULD(draggingULD, returnSlot);
+
+            draggingULD.classList.remove("dragging");
+            draggingULD.removeAttribute("style");
+            draggingULD = null;
+            isDragging = false;
+
+            clearHighlights();
+            updateCargoDeck();
+            applyBlockingVisuals();
+            return;
+        }
+
+        // ✅ Allowed drop
         moveULD(draggingULD, best);
+
     } else {
         const returnSlot = document.querySelector(`.slot[data-pos="${oldPos}"]`);
         if (returnSlot) moveULD(draggingULD, returnSlot);
@@ -199,10 +218,9 @@ function dragEnd(e) {
     draggingULD = null;
     isDragging = false;
 
-    // IMPORTANT FIX
     clearHighlights();
-    updateCargoDeck();          // <--- re-draw ULDs
-    applyBlockingVisuals();     // <--- re-apply blocking properly
+    updateCargoDeck();
+    applyBlockingVisuals();
 }
 
 
@@ -211,7 +229,16 @@ function moveULD(box, slot) {
     slot.classList.add("has-uld");
 
     const load = loads.find(l => l.id == box.dataset.loadId);
-    if (load) load.position = slot.dataset.pos;
+    if (load) {
+        load.position = slot.dataset.pos;
+
+        // ✅ Sync sidebar dropdown
+        const row = document.querySelector(`.load-row[data-loadid="${load.id}"]`);
+        if (row) {
+            const posSelect = row.querySelector(".load-pos");
+            if (posSelect) posSelect.value = load.position;
+        }
+    }
 
     box.dataset.position = slot.dataset.pos;
 }
@@ -227,41 +254,38 @@ function clearHighlights() {
 
 
 function startSidebarULDdrag(loadId, rowEl) {
-    // Find the ULD data
     const load = loads.find(l => l.id == loadId);
     if (!load) return;
 
-    // Create a drag "box" (like a ULD from deck)
+    // Create drag box
     const box = document.createElement("div");
     box.className = "uld-box dragging";
-    box.textContent = (load.uldid ? load.uldid : load.type) + (load.weight ? "\n" + load.weight + " KG" : "");
+    box.textContent = (load.uldid ? load.uldid : load.type) +
+                      (load.weight ? "\n" + load.weight + " KG" : "");
     box.dataset.loadId = load.id;
     box.dataset.uldType = load.type;
     box.style.position = "fixed";
-    box.style.left = "-9999px"; // Offscreen until moved
+    box.style.left = "-9999px";
 
     document.body.appendChild(box);
 
     draggingULD = box;
     isDragging = true;
 
-    // Highlight valid slots on grid
     highlightSlots(load.type);
 
-    // Mouse move handler
     function onMove(e) {
         draggingULD.style.left = e.clientX + "px";
         draggingULD.style.top = e.clientY + "px";
         draggingULD.style.transform = "translate(-50%, -50%)";
     }
 
-    // Mouse up handler (drop)
     function onUp(e) {
         document.removeEventListener("mousemove", onMove);
         document.removeEventListener("mouseup", onUp);
 
-        // Try to drop on slot
         let best = null, bestDist = Infinity;
+
         document.querySelectorAll(".slot").forEach(slot => {
             const r = slot.getBoundingClientRect();
             const cx = r.left + r.width / 2;
@@ -270,17 +294,27 @@ function startSidebarULDdrag(loadId, rowEl) {
             if (d < bestDist) bestDist = d, best = slot;
         });
 
-        // Valid drop
         if (
             best &&
             bestDist < 90 &&
             isCorrectSlotType(load.type, best.dataset.pos) &&
             !best.classList.contains("disabled")
         ) {
-            // Assign the position
+
+            // 🚫 PREVENT DROP ON OCCUPIED SLOT
+            if (best.querySelector(".uld-box")) {
+                alert(`Position ${best.dataset.pos} already has a load.`);
+
+                // just cancel the drag
+                draggingULD.remove();
+                draggingULD = null;
+                isDragging = false;
+                clearHighlights();
+                return;
+            }
+
+            // ✅ Allowed drop
             load.position = best.dataset.pos;
-            // Remove the sidebar row
-            // Redraw the deck
             updateCargoDeck();
             applyBlockingVisuals();
         }
@@ -292,10 +326,10 @@ function startSidebarULDdrag(loadId, rowEl) {
         clearHighlights();
     }
 
-    // Start position for visual
     document.addEventListener("mousemove", onMove);
     document.addEventListener("mouseup", onUp);
 }
+
 
 // =======================================================
 //  KEYBOARD: MOVE LOAD ROW UP/DOWN (Arrow Keys)

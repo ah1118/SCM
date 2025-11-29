@@ -114,7 +114,7 @@ function exportLayout() {
     for (const pallet of remainingPallets) {
         const load = loadsMap[pallet];
         let line = (!load)
-            ? `-${pallet}/X`
+            ? `-${pallet}/N`
             : formatUld(pallet, load, dest);
         allLines.push({ pos: pallet, text: line });
     }
@@ -168,31 +168,35 @@ function exportLayout() {
 
 function formatUld(pos, load, dest) {
 
-    if (!load) return `-${pos}/X`;   // EMPTY → KEEP /X (your rule)
+    // 1️⃣ NO ULD INSTALLED AT ALL → "N"
+    if (!load) return `-${pos}/N`;
 
-    // BLK slot
+    // 2️⃣ BLK
     if (load.type === "BLK") {
         const weight = load.weight || 0;
         const bulk   = load.bulk === "FKT" ? "E" : (load.bulk || "BY");
         return `-${pos}/${weight}/${bulk}/${dest}`;
     }
 
-    // ⭐ FKT RULE → ALWAYS: -POS/TYPE/E/DEST
+    // 3️⃣ FKT → TYPE/E
     if (load.bulk === "FKT") {
         return `-${pos}/${load.type}/E/${dest}`;
     }
 
-    // Normal ULD (AKE/PAG/PMC/…)
+    // 4️⃣ EMPTY ULD → ULD in position but no load inside
+    if (load.bulk === "EMPTY") {
+        const idPart = load.uldid ? load.type + load.uldid : load.type;
+        // EMPTY always has X weight
+        return `-${pos}/${idPart}/X/BY/${dest}`;
+    }
+
+    // 5️⃣ NORMAL ULD
     const idPart = load.uldid ? load.type + load.uldid : load.type;
     const weight = load.weight || "X";   // X allowed when empty
     const bulk   = load.bulk || "BY";
 
     return `-${pos}/${idPart}/${weight}/${bulk}/${dest}`;
 }
-
-
-
-
 
 function formatAKEPair(L, R, map, dest) {
     const left  = formatUld(L, map[L], dest);
@@ -213,4 +217,5 @@ function formatAKEPair(L, R, map, dest) {
 document.getElementById("closeModal").onclick = function () {
     document.getElementById("exportModal").classList.add("hidden");
 };
+
 
